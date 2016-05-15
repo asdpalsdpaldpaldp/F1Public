@@ -178,6 +178,10 @@ void CMenu::menu()
 				CDrawManager::font_size_t size = gDrawManager.GetPixelTextSize("hud", hack->name());
 				menux = max(menux, size.length);
 			}
+			else
+			{
+				curr++;
+			}
 		}
 
 		int xx = menux + 170;
