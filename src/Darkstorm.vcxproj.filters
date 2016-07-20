@@ -1,0 +1,508 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="CHack.cpp">
+      <Filter>Hack\other\main hack</Filter>
+    </ClCompile>
+    <ClCompile Include="CEsp.cpp">
+      <Filter>Hack\modules\CEsp</Filter>
+    </ClCompile>
+    <ClCompile Include="CDrawManager.cpp">
+      <Filter>SDK\CDrawManager</Filter>
+    </ClCompile>
+    <ClCompile Include="CGlow.cpp">
+      <Filter>Hack\modules\CGlow</Filter>
+    </ClCompile>
+    <ClCompile Include="Client.cpp">
+      <Filter>Hack\other\Hooks\Client</Filter>
+    </ClCompile>
+    <ClCompile Include="Panels.cpp">
+      <Filter>Hack\other\Hooks\Panels</Filter>
+    </ClCompile>
+    <ClCompile Include="VMTHooks.cpp">
+      <Filter>Hack\other\Hooks\VMTHooks</Filter>
+    </ClCompile>
+    <ClCompile Include="Log.cpp">
+      <Filter>SDK\Misc\Log</Filter>
+    </ClCompile>
+    <ClCompile Include="CSignature.cpp">
+      <Filter>SDK\Misc\Sigs</Filter>
+    </ClCompile>
+    <ClCompile Include="DLLMain.cpp" />
+    <ClCompile Include="Netvar.cpp">
+      <Filter>NetVars + Offsets\Netvar</Filter>
+    </ClCompile>
+    <ClCompile Include="CGlobalVars.cpp">
+      <Filter>NetVars + Offsets\Offsets</Filter>
+    </ClCompile>
+    <ClCompile Include="CBackstab.cpp">
+      <Filter>Hack\modules\CAutoBackstab</Filter>
+    </ClCompile>
+    <ClCompile Include="IHack.cpp">
+      <Filter>Hack</Filter>
+    </ClCompile>
+    <ClCompile Include="CTrigger.cpp">
+      <Filter>Hack\modules\CTriggerBot</Filter>
+    </ClCompile>
+    <ClCompile Include="CNoise.cpp">
+      <Filter>Hack\modules\CNoise</Filter>
+    </ClCompile>
+    <ClCompile Include="CAimbot.cpp">
+      <Filter>Hack\modules\CAimbot</Filter>
+    </ClCompile>
+    <ClCompile Include="crc32.cpp">
+      <Filter>SDK\Source\crc</Filter>
+    </ClCompile>
+    <ClCompile Include="CAutoAirblast.cpp">
+      <Filter>Hack\modules\CAutoAirblast</Filter>
+    </ClCompile>
+    <ClCompile Include="bf_buffer.cpp">
+      <Filter>SDK\Source\bf_buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="CHackState.cpp">
+      <Filter>Hack\other\hack state</Filter>
+    </ClCompile>
+    <ClCompile Include="backtrace.cpp">
+      <Filter>SDK\backtrace</Filter>
+    </ClCompile>
+    <ClCompile Include="CMisc.cpp">
+      <Filter>Hack\modules\CMisc</Filter>
+    </ClCompile>
+    <ClCompile Include="CAnnouncer.cpp">
+      <Filter>Hack\modules\CAnnouncer</Filter>
+    </ClCompile>
+    <ClCompile Include="CPureBypass.cpp">
+      <Filter>Hack\modules\CPureBypass</Filter>
+    </ClCompile>
+    <ClCompile Include="CAntiSmac.cpp">
+      <Filter>Hack\modules\CAntismac</Filter>
+    </ClCompile>
+    <ClCompile Include="IEngineSound.cpp">
+      <Filter>SDK\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="netmessage.cpp">
+      <Filter>SDK\Source\network</Filter>
+    </ClCompile>
+    <ClCompile Include="CFileManager.cpp">
+      <Filter>SDK\File Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="CHookManager.cpp">
+      <Filter>Hack\other\Hooks\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="CNokick.cpp">
+      <Filter>Hack\modules\CNokick</Filter>
+    </ClCompile>
+    <ClCompile Include="CAntiaim.cpp">
+      <Filter>Hack\modules\CAntiaim</Filter>
+    </ClCompile>
+    <ClCompile Include="CRadar.cpp">
+      <Filter>Hack\modules\CRadar</Filter>
+    </ClCompile>
+    <ClCompile Include="ConVar.cpp">
+      <Filter>SDK\Source\Cvar</Filter>
+    </ClCompile>
+    <ClCompile Include="CEtags.cpp">
+      <Filter>NetVars + Offsets\EntityTags</Filter>
+    </ClCompile>
+    <ClCompile Include="F1_Gui.cpp">
+      <Filter>SDK\F1</Filter>
+    </ClCompile>
+    <ClCompile Include="Util.cpp">
+      <Filter>SDK\F1</Filter>
+    </ClCompile>
+    <ClCompile Include="F1_Menu.cpp">
+      <Filter>Hack\other\main menu</Filter>
+    </ClCompile>
+    <ClCompile Include="F1_Cache.cpp">
+      <Filter>SDK\F1</Filter>
+    </ClCompile>
+    <ClCompile Include="CPlayerManager.cpp">
+      <Filter>Hack\modules\CPlayerManager</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CHack.h">
+      <Filter>Hack\other\main hack</Filter>
+    </ClInclude>
+    <ClInclude Include="CEsp.h">
+      <Filter>Hack\modules\CEsp</Filter>
+    </ClInclude>
+    <ClInclude Include="CDrawManager.h">
+      <Filter>SDK\CDrawManager</Filter>
+    </ClInclude>
+    <ClInclude Include="IHack.h">
+      <Filter>Hack</Filter>
+    </ClInclude>
+    <ClInclude Include="SDK.h">
+      <Filter>SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="WeaponList.h">
+      <Filter>SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="CGlow.h">
+      <Filter>Hack\modules\CGlow</Filter>
+    </ClInclude>
+    <ClInclude Include="Panels.h">
+      <Filter>Hack\other\Hooks\Panels</Filter>
+    </ClInclude>
+    <ClInclude Include="VMTHooks.h">
+      <Filter>Hack\other\Hooks\VMTHooks</Filter>
+    </ClInclude>
+    <ClInclude Include="Log.h">
+      <Filter>SDK\Misc\Log</Filter>
+    </ClInclude>
+    <ClInclude Include="CSignature.h">
+      <Filter>SDK\Misc\Sigs</Filter>
+    </ClInclude>
+    <ClInclude Include="getvfunc.h">
+      <Filter>SDK\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="unlinkpeb.h">
+      <Filter>SDK\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="Netvar.h">
+      <Filter>NetVars + Offsets\Netvar</Filter>
+    </ClInclude>
+    <ClInclude Include="CGlobalVars.h">
+      <Filter>NetVars + Offsets\Offsets</Filter>
+    </ClInclude>
+    <ClInclude Include="Color.h">
+      <Filter>SDK\CDrawManager</Filter>
+    </ClInclude>
+    <ClInclude Include="IConvar.h">
+      <Filter>SDK\Source\Cvar</Filter>
+    </ClInclude>
+    <ClInclude Include="CBackstab.h">
+      <Filter>Hack\modules\CAutoBackstab</Filter>
+    </ClInclude>
+    <ClInclude Include="CEntity.h">
+      <Filter>NetVars + Offsets\Offsets</Filter>
+    </ClInclude>
+    <ClInclude Include="XorString.h">
+      <Filter>SDK\Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="CTrigger.h">
+      <Filter>Hack\modules\CTriggerBot</Filter>
+    </ClInclude>
+    <ClInclude Include="CNoise.h">
+      <Filter>Hack\modules\CNoise</Filter>
+    </ClInclude>
+    <ClInclude Include="keyval.h">
+      <Filter>SDK\Source\KeyValues</Filter>
+    </ClInclude>
+    <ClInclude Include="CAimbot.h">
+      <Filter>Hack\modules\CAimbot</Filter>
+    </ClInclude>
+    <ClInclude Include="crc32.h">
+      <Filter>SDK\Source\crc</Filter>
+    </ClInclude>
+    <ClInclude Include="Trace.h">
+      <Filter>SDK\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="bspflags.h">
+      <Filter>SDK\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector.h">
+      <Filter>SDK\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="random.h">
+      <Filter>SDK\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="prediction.h">
+      <Filter>SDK\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="CAutoAirblast.h">
+      <Filter>Hack\modules\CAutoAirblast</Filter>
+    </ClInclude>
+    <ClInclude Include="ClassId.h">
+      <Filter>SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="bf_buffer.h">
+      <Filter>SDK\Source\bf_buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="bitvec.h">
+      <Filter>SDK\Source\bf_buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="valvePlatform.h">
+      <Filter>SDK\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="CUtlVector.h">
+      <Filter>SDK\Source\Utl stuff</Filter>
+    </ClInclude>
+    <ClInclude Include="CUtlMemory.h">
+      <Filter>SDK\Source\Utl stuff</Filter>
+    </ClInclude>
+    <ClInclude Include="CUtlMemoryPool.h">
+      <Filter>SDK\Source\Utl stuff</Filter>
+    </ClInclude>
+    <ClInclude Include="CUtlLinkedList.h">
+      <Filter>SDK\Source\Utl stuff</Filter>
+    </ClInclude>
+    <ClInclude Include="baseHeaders.h">
+      <Filter>SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="factory.h">
+      <Filter>SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="CHackState.h">
+      <Filter>Hack\other\hack state</Filter>
+    </ClInclude>
+    <ClInclude Include="notNullInterface.h">
+      <Filter>SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="backtrace.h">
+      <Filter>SDK\backtrace</Filter>
+    </ClInclude>
+    <ClInclude Include="CMisc.h">
+      <Filter>Hack\modules\CMisc</Filter>
+    </ClInclude>
+    <ClInclude Include="CAnnouncer.h">
+      <Filter>Hack\modules\CAnnouncer</Filter>
+    </ClInclude>
+    <ClInclude Include="CPureBypass.h">
+      <Filter>Hack\modules\CPureBypass</Filter>
+    </ClInclude>
+    <ClInclude Include="CAntiSmac.h">
+      <Filter>Hack\modules\CAntismac</Filter>
+    </ClInclude>
+    <ClInclude Include="clientstate.h">
+      <Filter>SDK\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="IEngineSound.h">
+      <Filter>SDK\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="netmessage.h">
+      <Filter>SDK\Source\network</Filter>
+    </ClInclude>
+    <ClInclude Include="netpacket.h">
+      <Filter>SDK\Source\network</Filter>
+    </ClInclude>
+    <ClInclude Include="network.h">
+      <Filter>SDK\Source\network</Filter>
+    </ClInclude>
+    <ClInclude Include="demo.h">
+      <Filter>SDK\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="event.h">
+      <Filter>SDK\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="CFileManager.h">
+      <Filter>SDK\File Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="CHookManager.h">
+      <Filter>Hack\other\Hooks\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="CNokick.h">
+      <Filter>Hack\modules\CNokick</Filter>
+    </ClInclude>
+    <ClInclude Include="CAntiaim.h">
+      <Filter>Hack\modules\CAntiaim</Filter>
+    </ClInclude>
+    <ClInclude Include="CRadar.h">
+      <Filter>Hack\modules\CRadar</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>SDK\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="ConVar.h">
+      <Filter>SDK\Source\Cvar</Filter>
+    </ClInclude>
+    <ClInclude Include="CEtags.h">
+      <Filter>NetVars + Offsets\EntityTags</Filter>
+    </ClInclude>
+    <ClInclude Include="weaponInfo.h">
+      <Filter>SDK\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="dt_common2.h">
+      <Filter>SDK\Source\datatable</Filter>
+    </ClInclude>
+    <ClInclude Include="dt_recv2.h">
+      <Filter>SDK\Source\datatable</Filter>
+    </ClInclude>
+    <ClInclude Include="CDumper.h">
+      <Filter>NetVars + Offsets\Netvar</Filter>
+    </ClInclude>
+    <ClInclude Include="CBaseHandle.h">
+      <Filter>SDK\Source\handles</Filter>
+    </ClInclude>
+    <ClInclude Include="CHandle.h">
+      <Filter>SDK\Source\handles</Filter>
+    </ClInclude>
+    <ClInclude Include="CAimHelper.h">
+      <Filter>Hack\other\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="CTargetHelper.h">
+      <Filter>Hack\other\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="F1_Gui.h">
+      <Filter>SDK\F1</Filter>
+    </ClInclude>
+    <ClInclude Include="Util.h">
+      <Filter>SDK\F1</Filter>
+    </ClInclude>
+    <ClInclude Include="F1_Menu.h">
+      <Filter>Hack\other\main menu</Filter>
+    </ClInclude>
+    <ClInclude Include="commonEnums.h">
+      <Filter>SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="F1_Cache.h">
+      <Filter>SDK\F1</Filter>
+    </ClInclude>
+    <ClInclude Include="projectile.h">
+      <Filter>SDK\F1</Filter>
+    </ClInclude>
+    <ClInclude Include="CPlayerManager.h">
+      <Filter>Hack\modules\CPlayerManager</Filter>
+    </ClInclude>
+    <ClInclude Include="F1_ConVar.h">
+      <Filter>SDK\F1</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="NetVars + Offsets">
+      <UniqueIdentifier>{0ee408a2-f967-4793-8f10-129264cd49d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hack">
+      <UniqueIdentifier>{3a02f806-fa1f-471d-bb69-5bbd5463ca0c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SDK">
+      <UniqueIdentifier>{e8f0298d-ae31-4fac-954f-7198ec1bfa32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SDK\Misc">
+      <UniqueIdentifier>{8ddb646f-65bc-4ac8-87e6-5902472d1bf4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SDK\Misc\Log">
+      <UniqueIdentifier>{be50cbb8-3217-4a9f-b3b2-22e20cac37a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SDK\Misc\Sigs">
+      <UniqueIdentifier>{d1d4f59d-01c5-40fa-a2d8-1031732795ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="NetVars + Offsets\Netvar">
+      <UniqueIdentifier>{a75c4716-6202-49f4-a5c4-120512000bc9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="NetVars + Offsets\Offsets">
+      <UniqueIdentifier>{6b8654cf-1921-4791-a1e6-fe8d2368c922}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SDK\CDrawManager">
+      <UniqueIdentifier>{d3073876-24dc-4305-84ec-129a62c24695}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SDK\Source">
+      <UniqueIdentifier>{ed8c3195-8cea-4247-8f23-e2099fb61969}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SDK\Source\crc">
+      <UniqueIdentifier>{4f362b1e-d7e0-4ea9-8e23-b2b04bfcd47e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SDK\Source\KeyValues">
+      <UniqueIdentifier>{2c14ef32-3e5b-4a29-a892-dcd6a7b6c20c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SDK\Source\Cvar">
+      <UniqueIdentifier>{946eefe6-e1fd-4bdf-be30-4c9ffdcbb97c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SDK\Source\bf_buffer">
+      <UniqueIdentifier>{cba76327-d6bf-40d5-bb1f-16562bc9876b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hack\modules">
+      <UniqueIdentifier>{ec12fe72-53f9-438c-8b09-aea55f3fe5a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hack\other">
+      <UniqueIdentifier>{f5d16e02-fbed-442e-9fd8-18fc2ebe8790}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hack\modules\CTriggerBot">
+      <UniqueIdentifier>{6ac6c926-f302-4eae-8433-64bdb386d496}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hack\modules\CNoise">
+      <UniqueIdentifier>{55d2c2c9-5759-437e-b771-bc4e1eb7353e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hack\modules\CGlow">
+      <UniqueIdentifier>{e80c32d2-36c3-450d-b9f8-3cd654d4062f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hack\modules\CEsp">
+      <UniqueIdentifier>{ec7e7ad0-0b54-4842-ad44-37dcbad4c201}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hack\modules\CAutoBackstab">
+      <UniqueIdentifier>{530cd05c-b8d9-4428-9f9f-c69e2229a6d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hack\modules\CAutoAirblast">
+      <UniqueIdentifier>{5ef74178-c0b3-4f86-9414-25d5190fbbc6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hack\modules\CAimbot">
+      <UniqueIdentifier>{fce48adc-c5c1-4d52-ba0a-02a43b601c78}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hack\other\main hack">
+      <UniqueIdentifier>{69c1421f-5d22-4378-89c8-9a8f7feb20ab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hack\other\main menu">
+      <UniqueIdentifier>{efb41b5d-7171-4d30-a219-267961ec6385}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SDK\Source\Utl stuff">
+      <UniqueIdentifier>{069b77a6-ffdd-4d72-bd4d-a658a6bcd7fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hack\other\hack state">
+      <UniqueIdentifier>{00c268e4-9e59-492b-b6cd-6967eaf78f6f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SDK\backtrace">
+      <UniqueIdentifier>{2b9c3a22-bee8-4704-9249-74043fc5dc70}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hack\modules\CMisc">
+      <UniqueIdentifier>{aed79d63-dc21-42aa-b4e5-beb5a3ac1e32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hack\modules\CAnnouncer">
+      <UniqueIdentifier>{69ec9757-87ed-43af-bfba-2d7e6037ed0a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hack\modules\CPureBypass">
+      <UniqueIdentifier>{1a01d02f-fb7f-4691-8a45-3f28772b6561}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hack\modules\CAntismac">
+      <UniqueIdentifier>{95b634e6-a449-406d-b81d-7bc7c15a90d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SDK\Source\network">
+      <UniqueIdentifier>{f661de70-e615-4b26-8e9a-6adcd91197fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SDK\File Manager">
+      <UniqueIdentifier>{07314360-d311-4a39-8657-1cb997e36981}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hack\modules\CNokick">
+      <UniqueIdentifier>{20d7833b-f3b2-42f7-857a-ce3e1700f74b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hack\modules\CAntiaim">
+      <UniqueIdentifier>{75c23c46-b404-442c-b525-e0683f475cd0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hack\modules\CRadar">
+      <UniqueIdentifier>{f790a80e-ff4a-4d14-af5c-193e53c8fa7e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="NetVars + Offsets\EntityTags">
+      <UniqueIdentifier>{330bdf35-8b2a-485e-99b3-1b566c767ddc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SDK\Source\datatable">
+      <UniqueIdentifier>{cf014eb4-b21e-46ad-b0f5-377d2482926e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hack\other\Hooks">
+      <UniqueIdentifier>{2c4b6af2-0433-4e74-ab5b-6879a609efe8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hack\other\Hooks\Client">
+      <UniqueIdentifier>{68a811c9-f292-4444-8b2b-cb05847f763b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hack\other\Hooks\Panels">
+      <UniqueIdentifier>{262b0bb9-c8f5-4d17-836a-92048a5a154d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hack\other\Hooks\VMTHooks">
+      <UniqueIdentifier>{e60c29af-c1a1-4e6f-b390-0f2152df68a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hack\other\Hooks\Manager">
+      <UniqueIdentifier>{66ae1e09-265c-43fc-8bcc-81de8667d5e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SDK\Source\handles">
+      <UniqueIdentifier>{a4378b14-86ef-4c9e-92fa-a98be101a4a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hack\other\helpers">
+      <UniqueIdentifier>{5b86c629-1f89-4ef1-b6dc-bcd5e348615f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="SDK\F1">
+      <UniqueIdentifier>{522f2d47-8239-4ca0-801c-d122f5eb8d1f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hack\modules\CPlayerManager">
+      <UniqueIdentifier>{fee3e482-7a47-47e1-9b07-fbb684547d49}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
