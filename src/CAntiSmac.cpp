@@ -52,13 +52,13 @@ void CAntiSmac::init()
 
 	// tokenize this file when we start
 	cvarList = gFileManager.TokenFile(handle, ':');
-*/
 
 	//nameVar = gInts.Cvar->FindVar("name");
 
 	//nameVar->m_fnChangeCallback = nullptr;
 
 	#endif
+*/
 
 	return;
 }
