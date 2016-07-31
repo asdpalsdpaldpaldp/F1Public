@@ -41,7 +41,7 @@ void CAntiSmac::init()
 
 	gHookManager.hookMethod(gInts.ClientState.get(), gOffsets.processGetCvarValue, &Hooked_ProcessGetCvarValue, 0x8);
 	gHookManager.hookMethod(gInts.ClientState.get(), gOffsets.processSetConVar, &Hooked_ProcessSetConVar, 0x8);
-
+/*
 	#if _MSC_VER == 1900
 
 	// open this file for reading
@@ -52,6 +52,7 @@ void CAntiSmac::init()
 
 	// tokenize this file when we start
 	cvarList = gFileManager.TokenFile(handle, ':');
+*/
 
 	//nameVar = gInts.Cvar->FindVar("name");
 
