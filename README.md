@@ -5,26 +5,26 @@ This is a stripped down version of my private hack that I will be updating it wh
 
 ## Features
 ### Aimbot
-silent / non silent
-kinda psient
-projectile
-ignore friends
+* silent / non silent
+* kinda psient
+* projectile
+* ignore friends
 ### ESP
-box
-health
-index
-friends
+* box
+* health
+* index
+* friends
 ### Glow
-team colored
+* team colored
 ### triggerbot
-hitbox or hitgroup
-zoomed only
+* hitbox or hitgroup
+* zoomed only
 
 ## Credits
 
 #### gir489
-creater of the darkstorm base and
-the noisemaker spam code
+creater of the darkstorm base and the noisemaker spam code
+##### learn_more for the signature scanning function's from ds2015
 
 #### Volvo
 source sdk and
