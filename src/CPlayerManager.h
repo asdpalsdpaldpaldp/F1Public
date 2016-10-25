@@ -7,7 +7,7 @@
 
 #include <mutex>
 
-class CPlayerManager : public IHack, public IGameEventListener2
+class CPlayerManager : public IHack<CPlayerManager>, public IGameEventListener2
 {
 public:
 
@@ -21,7 +21,14 @@ public:
 	struct playerState
 	{
 		//playerMode mode;
-		F1_ConVar<Enum<playerMode>> *mode = NULL;
+		F1_ConVar<Enum<playerMode>> mode{"<default>",{
+			playerMode::Normal,
+			{
+				{ playerMode::Normal, "Normal" },
+				{ playerMode::Friend, "Friend" },
+				{ playerMode::Rage, "Rage" },
+			}
+		} , playerMode::Normal, playerMode::Rage };
 		bool isTarget = false;
 		bool isValid = false;
 		int uid = -1;
@@ -29,18 +36,20 @@ public:
 	
 	CPlayerManager();
 
-	void init() override;
+	void init();
 
 	// returns -1 or 0xFFFFFFFF on no custom color (use team color)
 	DWORD getColorForPlayer( int index );
 
 	playerMode getModeForPlayer( int index );
 
-	void menuUpdate( F1_IConVar **menuArray, int &currIndex ) override;
+	void menuUpdate( F1_IConVar **menuArray, int &currIndex );
 
-	bool paint() override;
+	bool paint();
 
 	void setTarget( int index );
+
+	std::vector<playerState *> getPlayersWithMode(playerMode mode);
 
 	void FireGameEvent( IGameEvent *event ) override;
 
@@ -61,8 +70,6 @@ private:
 			{ playerMode::Rage, "Rage" },
 		}
 	};
-
-	std::mutex playerMutex;
 };
 
 extern CPlayerManager gPlayerManager;

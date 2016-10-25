@@ -4,7 +4,7 @@
 
 #include "SDK.h"
 
-class CPureBypass : public IHack
+class CPureBypass : public IHack<CPureBypass>
 {
 	DWORD dwPureLoc = NULL;
 
@@ -14,9 +14,11 @@ public:
 	CPureBypass() { demoPlayerHook = nullptr; };
 	~CPureBypass() { delete demoPlayerHook; };
 
-	const char *name() const override;
+	const char *name() const;
 
-	void init() override;
+	void init();
 
-	bool paint(/*CUserCmd **/) override;
+	bool paint(/*CUserCmd **/);
 };
+
+extern CPureBypass gPureBypass;

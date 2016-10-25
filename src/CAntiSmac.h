@@ -5,7 +5,7 @@
 #include "network.h"
 // TODO
 // try to make all hacks singletons of some form
-class CAntiSmac : public IHack
+class CAntiSmac : public IHack<CAntiSmac>
 {
 
 	std::vector<cvar_t> serverConvars;
@@ -13,15 +13,13 @@ class CAntiSmac : public IHack
 	// custom set defaults for smac convar (when our automated one doesnt work!)
 	CFileManager::tokens cvarList;
 
-	F1_ConVar<Switch> *antiSmacSwitch;
-
-	F1_ConVar<bool> *nameSpam;
+	F1_ConVar<Switch> antiSmacSwitch = F1_ConVar<Switch>("AntiSmac", false);
+	F1_ConVar<bool> nameSpam = F1_ConVar<bool>(" - Name spam", false);
+	F1_ConVar<bool> debug = F1_ConVar<bool>(" - Debug info", false);
 
 public:
 	CAntiSmac()
 	{
-		antiSmacSwitch = new F1_ConVar<Switch>( "Anti Smac", false );
-		nameSpam = new F1_ConVar<bool>( " - Name spam", false );
 	}
 
 	static CAntiSmac *getInst()
@@ -33,11 +31,11 @@ public:
 	CAntiSmac(const CAntiSmac &c) = delete;
 	void operator=(CAntiSmac &o) = delete;
 
-	const char *name() const override;
+	const char *name() const;
 
-	void init() override;
+	void init();
 
-	void processCommand(CUserCmd *pUserCmd) override;
+	void processCommand(CUserCmd *pUserCmd);
 
 	bool processGetCvarValue(SVC_GetCvarValue *msg);
 
@@ -45,5 +43,5 @@ public:
 
 	bool processStringCmd(NET_StringCmd *msg);
 
-	void menuUpdate( F1_IConVar **menuArray, int &currIndex ) override;
+	void menuUpdate( F1_IConVar **menuArray, int &currIndex );
 };

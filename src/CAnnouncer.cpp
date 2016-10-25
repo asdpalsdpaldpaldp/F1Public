@@ -2,6 +2,8 @@
 
 #include "SDK.h"
 
+CAnnouncer gAnnouncer;
+
 // girs stuff - huge creds to him for this
 
 void CAnnouncer::init()
@@ -40,28 +42,28 @@ void CAnnouncer::FireGameEvent(IGameEvent *event)
 				switch(killStreakCounter)
 				{
 				case 2:
-					strcpy(chKillstreakSound, "UT2k4/Double_Kill.wav");
+					strcpy_s(chKillstreakSound, "UT2k4/Double_Kill.wav");
 					break;
 				case 3:
-					strcpy(chKillstreakSound, "Quake3/quake_tripplekill.wav");
+					strcpy_s(chKillstreakSound, "Quake3/quake_tripplekill.wav");
 					break;
 				case 4:
-					strcpy(chKillstreakSound, "UT99/multikill.wav");
+					strcpy_s(chKillstreakSound, "UT99/multikill.wav");
 					break;
 				case 5:
-					strcpy(chKillstreakSound, "UT2k4/MegaKill.wav");
+					strcpy_s(chKillstreakSound, "UT2k4/MegaKill.wav");
 					break;
 				case 6:
-					strcpy(chKillstreakSound, "UT99/ultrakill.wav");
+					strcpy_s(chKillstreakSound, "UT99/ultrakill.wav");
 					break;
 				case 7:
-					strcpy(chKillstreakSound, "UT99/monsterkill.wav");
+					strcpy_s(chKillstreakSound, "UT99/monsterkill.wav");
 					break;
 				case 8:
-					strcpy(chKillstreakSound, "UT2k4/LudicrousKill.wav");
+					strcpy_s(chKillstreakSound, "UT2k4/LudicrousKill.wav");
 					break;
 				default: // 9 or more kills in a row, play 'Holy Shit!' every time.
-					strcpy(chKillstreakSound, "UT2k4/HolyShit.wav");
+					strcpy_s(chKillstreakSound, "UT2k4/HolyShit.wav");
 				}
 			}
 			else
@@ -139,7 +141,7 @@ void CAnnouncer::processCommand(CUserCmd *pUserCmd)
 		if(strcmp(chKillstreakSound, "")) // Check if the killstreak has something queued.
 		{
 			PlaySound(chKillstreakSound);
-			strcpy(chKillstreakSound, ""); // Once done, zero out the chKillstreakSound member.
+			strcpy_s(chKillstreakSound, ""); // Once done, zero out the chKillstreakSound member.
 		}
 	}
 	return;

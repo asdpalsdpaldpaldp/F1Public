@@ -592,13 +592,13 @@ struct studiohdr_t
 	// raw textures search paths
 	int					numcdtextures;
 	int					cdtextureindex;
-	inline char			*pCdtexture(int i) const { return (((char *)this) + *((int *)(((byte *)this) + cdtextureindex) + i)); };
+	inline char			*pCdtexture(int i) const { return (((char *)this) + *((int *)((( BYTE *)this) + cdtextureindex) + i)); };
 
 	// replaceable textures tables
 	int					numskinref;
 	int					numskinfamilies;
 	int					skinindex;
-	inline short		*pSkinref(int i) const { return (short *)(((byte *)this) + skinindex) + i; };
+	inline short		*pSkinref(int i) const { return (short *)((( BYTE *)this) + skinindex) + i; };
 
 	int					numbodyparts;
 	int					bodypartindex;
@@ -621,8 +621,8 @@ struct studiohdr_t
 	int					numlocalnodes;
 	int					localnodeindex;
 	int					localnodenameindex;
-	inline char			*pszLocalNodeName(int iNode) const { Assert(iNode >= 0 && iNode < numlocalnodes); return (((char *)this) + *((int *)(((byte *)this) + localnodenameindex) + iNode)); }
-	inline byte			*pLocalTransition(int i) const { Assert(i >= 0 && i < (numlocalnodes * numlocalnodes)); return (byte *)(((byte *)this) + localnodeindex) + i; };
+	inline char			*pszLocalNodeName(int iNode) const { Assert(iNode >= 0 && iNode < numlocalnodes); return (((char *)this) + *((int *)((( BYTE *)this) + localnodenameindex) + iNode)); }
+	inline BYTE			*pLocalTransition(int i) const { Assert(i >= 0 && i < (numlocalnodes * numlocalnodes)); return ( BYTE *)((( BYTE *)this) + localnodeindex) + i; };
 
 	//public:
 	int					EntryNode(int iSequence);
@@ -699,10 +699,10 @@ struct studiohdr_t
 	int					animblockindex;
 	//inline void *pAnimBlock(int i) const { Assert(i > 0 && i < numanimblocks); return (void *)(((byte *)this) + animblockindex) + i; };
 	mutable void		*animblockModel;
-	byte *				GetAnimBlock(int i) const;
+	BYTE *				GetAnimBlock(int i) const;
 
 	int					bonetablebynameindex;
-	inline const byte	*GetBoneTableSortedByName() const { return (byte *)this + bonetablebynameindex; }
+	inline const BYTE	*GetBoneTableSortedByName() const { return ( BYTE *)this + bonetablebynameindex; }
 
 	// used by tools only that don't cache, but persist mdl's peer data
 	// engine uses virtualModel to back link to cache pointers
@@ -712,20 +712,20 @@ struct studiohdr_t
 	// if STUDIOHDR_FLAGS_CONSTANT_DIRECTIONAL_LIGHT_DOT is set,
 	// this value is used to calculate directional components of lighting 
 	// on static props
-	byte				constdirectionallightdot;
+	BYTE				constdirectionallightdot;
 
 	// set during load of mdl data to track *desired* lod configuration (not actual)
 	// the *actual* clamped root lod is found in studiohwdata
 	// this is stored here as a global store to ensure the staged loading matches the rendering
-	byte				rootLOD;
+	BYTE				rootLOD;
 
 	// set in the mdl data to specify that lod configuration should only allow first numAllowRootLODs
 	// to be set as root LOD:
 	//	numAllowedRootLODs = 0	means no restriction, any lod can be set as root lod.
 	//	numAllowedRootLODs = N	means that lod0 - lod(N-1) can be set as root lod, but not lodN or lower.
-	byte				numAllowedRootLODs;
+	BYTE				numAllowedRootLODs;
 
-	byte				unused[1];
+	BYTE				unused[1];
 
 	int					unused4; // zero out if version < 47
 
@@ -740,7 +740,7 @@ struct studiohdr_t
 
 	// FIXME: Remove when we up the model version. Move all fields of studiohdr2_t into studiohdr_t.
 	int					studiohdr2index;
-	void*		pStudioHdr2() const { return (void *)(((byte *)this) + studiohdr2index); }
+	void*		pStudioHdr2() const { return (void *)((( BYTE *)this) + studiohdr2index); }
 
 	// Src bone transforms are transformations that will convert .dmx or .smd-based animations into .mdl-based animations
 	//int					NumSrcBoneTransforms() const { return studiohdr2index ? pStudioHdr2()->void : 0; }

@@ -6,6 +6,8 @@
 
 #include "CEntity.h"
 
+#include "CPlayerManager.h"
+
 namespace __CTargetHelper
 {
 	// makes me ill
@@ -41,10 +43,16 @@ namespace __CTargetHelper
 		MakeVector(angle, aim);
 		MakeVector(ang, ang);
 
-		float mag = sqrtf(pow(aim.x, 2) + pow(aim.y, 2) + pow(aim.z, 2));
+		float mag = aim.Length();
 		float u_dot_v = aim.Dot(ang);
 
 		return RAD2DEG(acos(u_dot_v / (pow(mag, 2))));
+	}
+
+	inline float GetFovFromLocalPlayer( Vector dst )
+	{
+		CEntity<> local{ me };
+		return GetFov( local->GetAbsAngles(), local->GetAbsOrigin() + gLocalPlayerVars.viewOffset, dst );
 	}
 
 	inline float getDistanceToVector(Vector v)
@@ -74,7 +82,8 @@ struct std::hash<CTarget>
 {
 	size_t operator()(const CTarget &c) const
 	{
-		return std::hash<int>()(c.ent);
+		// we dont need to hash this, each index is unique anyway
+		return c.ent;
 	}
 };
 
@@ -215,4 +224,205 @@ inline IBaseTargetSystem *switchTargetSystem(IBaseTargetSystem *oldPtr, targetHe
 		break;
 	}
 }
+
+class CGlobalTargetHelper
+{
+	CTarget bestRageTarg;
+	CTarget bestTarg;
+
+	CTarget targ;
+public:
+
+	// return value is whether the entity is valid (e.g. for player cond, alive, team)
+	// int is the index
+	// this should not check whether the target is visible (e.g. position checks)
+	using isValidTargetFn = std::function<bool( int )>;
+
+	// return value is whether the entity is visible
+	// int is the index
+	// place the target vector into the Vector &
+	// this should only do position checks
+	using isVisibleTargetFn = std::function<bool( int, Vector & )>;
+
+	// compares two targets too each other
+	// the first param is the current best target
+	// the second param is the new potential best target
+	// return true to show that the new one is better
+	// or false to show that the old one is still best
+	using compareTargetFn = std::function<bool( const CTarget &, const CTarget & )>;
+
+	CGlobalTargetHelper()
+	{
+		isValidTarget = defaultIsValidTargetFn;
+		isVisibleTarget = defaultIsVisibleTargetFn;
+		compareTarget = defaultCompareTargetFn;
+	}
+
+	// evalulates targets based on system used, rage targets, friends
+	// call once per tick
+	void think()
+	{
+		bool oneTimeRage = false;
+		bool oneTimeNormal = false;
+
+		bool hasRageTarget = false;
+		bool hasTarget = false;
+
+		for( int i = 1; i < gInts.Engine->GetMaxClients(); i++ )
+		{
+			CBaseEntity *pBaseEntity = gInts.EntList->GetClientEntity( i );
+
+			if( pBaseEntity == NULL )
+			{
+				continue;
+			}
+
+			if( pBaseEntity->IsDormant() )
+			{
+				continue;
+			}
+
+			if( !isValidTarget( i ) )
+			{
+				continue;
+			}
+
+			Vector t;
+
+			if( !isVisibleTarget( i, t ) )
+			{
+				continue;
+			}
+
+			if( gPlayerManager.getModeForPlayer( i ) == CPlayerManager::playerMode::Rage )
+			{
+				CTarget newTarg = {i,t};
+				if(!oneTimeRage)
+				{
+					bestRageTarg = newTarg;
+					oneTimeRage = true;
+					hasRageTarget = hasTarget = true;
+				}
+				else
+				{
+					if(compareTarget(bestRageTarg, newTarg))
+					{
+						bestRageTarg = newTarg;
+					}
+				}
+			}
+			else if( gPlayerManager.getModeForPlayer( i ) == CPlayerManager::playerMode::Normal )
+			{
+				CTarget newTarg = {i,t};
+				if(!oneTimeNormal)
+				{
+					bestTarg = newTarg;
+					oneTimeNormal = true;
+					hasTarget = true;
+				}
+				else
+				{
+					if(compareTarget(bestTarg, newTarg))
+					{
+						bestTarg = newTarg;
+					}
+				}
+			}
+		}
+
+		if(hasTarget == true)
+		{
+			// if we have a rage target, then we want to hit them
+			if(hasRageTarget == true)
+				targ = bestRageTarg;
+			else
+				targ = bestTarg;
+
+			gPlayerManager.setTarget(targ.ent);
+		}
+		else
+		{
+			// set invalid ents
+			gPlayerManager.setTarget(-1);
+			targ.ent = -1;
+		}
+
+
+	}
+
+	CTarget getBestTarget()
+	{
+		return targ;
+	}
+
+	void setValidTargetFn( DWORD k, isValidTargetFn fn )
+	{
+		if( k != key )
+			return;
+		if( fn == nullptr )
+		{
+			isValidTarget = defaultIsValidTargetFn;
+		}
+		isValidTarget = fn;
+	}
+
+	void setVisibleTargetFn( DWORD k, isVisibleTargetFn fn )
+	{
+		if( k != key )
+			return;
+		if( fn == nullptr )
+		{
+			isVisibleTarget = defaultIsVisibleTargetFn;
+		}
+		isVisibleTarget = fn;
+	}
+
+	void setCompareTarget( DWORD k, compareTargetFn fn )
+	{
+		if( k != key )
+			return;
+		if( fn == nullptr )
+		{
+			compareTarget = defaultCompareTargetFn;
+		}
+		compareTarget = fn;
+	}
+
+	void releaseOwner( DWORD k )
+	{
+		if( key == k )
+		{
+			owned = false;
+			key += 1;
+		}
+	}
+
+	bool tryBecomeOwner( DWORD &k )
+	{
+		if( owned )
+			return false;
+		else
+			k = key;
+
+		return true;
+	}
+
+private:
+	isValidTargetFn isValidTarget;
+	isValidTargetFn defaultIsValidTargetFn = []( int ) -> bool { return false; };
+
+	isVisibleTargetFn isVisibleTarget;
+	isVisibleTargetFn defaultIsVisibleTargetFn = []( int, Vector & ) -> bool { return false; };
+
+	compareTargetFn compareTarget;
+	compareTargetFn defaultCompareTargetFn = []( const CTarget &, const CTarget & ) -> bool { return false; };
+
+	// this is here to prevent different modules from overriding the valid/visible/compare functions
+	// only 1 module should needs to get targets at a time
+	DWORD key;
+	bool owned = false;
+
+};
+
+extern CGlobalTargetHelper gTargetHelper;
 

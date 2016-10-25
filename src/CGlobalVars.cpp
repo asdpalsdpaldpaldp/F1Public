@@ -26,7 +26,7 @@ void CPlayerVariables::find()
 		vecVelocity			= gNetvars.get_offset("DT_BasePlayer", "localdata", "m_vecBaseVelocity");
 		iPlayerCond			= gNetvars.get_offset("DT_TFPlayer", "m_Shared", "m_nPlayerCond");
 		vecPunchAngle		= gNetvars.get_offset("DT_BasePlayer", "localdata", "m_Local", "m_vecPunchAngle");
-		hOwner				= gNetvars.get_offset("DT_BaseCombatWeapon", "m_hOwner");
+		hOwner				= gNetvars.get_offset("DT_BaseCombatWeapon", "m_hOwner"); // do this
 		movetype			= gNetvars.get_offset("DT_BaseEntity", "movetype");
 		collision			= gNetvars.get_offset("DT_BaseEntity", "m_Collision");
 		rgflCoordinateFrame = gNetvars.get_offset("DT_BaseEntity", "m_CollisionGroup") - 0x4C;
@@ -35,6 +35,7 @@ void CPlayerVariables::find()
 		angRotation			= gNetvars.get_offset("DT_BaseEntity", "m_angRotation");
 		flChargeBeginTime	= gNetvars.get_offset( "DT_WeaponPipebombLauncher", "PipebombLauncherLocalData", "m_flChargeBeginTime" );
 		flAnimTime = gNetvars.get_offset( "DT_BaseEntity", "AnimTimeMustBeFirst", "m_flAnimTime" );
+		flSimulationTime = gNetvars.get_offset( "DT_BaseEntity", "m_flSimulationTime" );
 
 		iItemDefinitionIndex = gNetvars.get_offset("DT_EconEntity", "m_AttributeManager", "m_Item", "m_iItemDefinitionIndex");
 		// TODO fixme

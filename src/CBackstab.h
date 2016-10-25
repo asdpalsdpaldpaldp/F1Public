@@ -5,7 +5,7 @@
 
 class CBaseCombatWeapon;
 
-class CBackstab : public IHack
+class CBackstab : public IHack<CBackstab>
 {
 	F1_ConVar<Switch> *autoBackstabSwitch;
 	F1_ConVar<bool> *enabled;
@@ -17,17 +17,21 @@ public:
 		enabled = new F1_ConVar<bool>( " - Enabled", false );
 	}
 
-	const char *name() const override;
-	void processCommand(CUserCmd *pUserCmd) override;
+	const char *name() const;
+	void processCommandBeforePred(CUserCmd *pUserCmd);
+
+	void menuUpdate( F1_IConVar **menuArray, int &currIndex );
 
 private:
 	// internal
 	// replaces netvar
-	bool canBackstab(CEntity<CBaseCombatWeapon> &weap_entity, CEntity<> &local_entity);
+	bool canBackstab( CBaseCombatWeapon *pBaseCombatWeapon, CBaseEntity *pBaseEntity );
 
-	bool isBehind(CEntity<> &other_entity, CEntity<> &local_entity);
+	bool isBehind( CBaseEntity *pBaseEntity, CBaseEntity *pLocalEntity );
 
 	bool engineCanBackstab(CBaseCombatWeapon *weapon, CBaseEntity *target);
 
 	bool predicts(CEntity<> &local, CEntity<> &other);
 };
+
+extern CBackstab gBackstab;

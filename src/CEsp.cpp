@@ -2,80 +2,72 @@
 
 #include "SDK.h"
 #include "CDrawManager.h"
-#include "CEntity.h"
 #include "Util.h"
 
 #include "CTargetHelper.h"
 #include "CPlayerManager.h"
+
+CESP gEsp;
 
 const char *CESP::name() const
 {
 	return "EXTRA-SENSORY PERCEPTION";
 }
 
-bool CESP::processEntity(int index)
+void CESP::processEntity( CBaseEntity *pBaseEntity )
 {
-	if(index == me) // we have no reason to perform esp on ourselves
-		return false;
-
-	// get the player
-	CEntity<> player(index);
-
-	// no nulls
-	if(player.isNull())
-		return false;
 
 	// no dormants
-	if(player->IsDormant())
-		return false;
+	if(pBaseEntity->IsDormant())
+		return;
 
 	Vector vecWorld, vecScreen;
 	Vector min, max, origin, localOrigin;
 
-	player->GetRenderBounds(min, max);
+	pBaseEntity->GetRenderBounds(min, max);
 
-	origin = player->GetAbsOrigin();
+	origin = pBaseEntity->GetAbsOrigin();
 
-	player->GetWorldSpaceCenter(vecWorld);
+	pBaseEntity->GetWorldSpaceCenter(vecWorld);
 
 	if(!gDrawManager.WorldToScreen(vecWorld, vecScreen))
-		return false;
+		return;
 
 	DWORD teamColor = COLORCODE(0,0,0,255);
 
-	DWORD playerColor = gPlayerManager.getColorForPlayer( index );
+	DWORD playerColor = gPlayerManager.getColorForPlayer( pBaseEntity->GetIndex() );
 	if( ( playerColor != 0xFFFFFFFF ) )
 		teamColor = playerColor;
 	else
-		teamColor = teamColor = gDrawManager.dwGetTeamColor( player.get<int>( gEntVars.iTeam ) );
+		teamColor = teamColor = gDrawManager.dwGetTeamColor( pBaseEntity->GetTeam() );
 
 	float distance = (localOrigin - origin).Length();
 
 	//Draw on the player.
 
-	classId id = player->GetClientClass()->iClassID;
+	classId id = pBaseEntity->GetClientClass()->iClassID;
 
 	if(id == classId::CTFPlayer)
 	{
 
 		// no deads
-		if(player.get<BYTE>(gEntVars.iLifeState) != LIFE_ALIVE)
-			return false;
+		if(pBaseEntity->IsAlive() == false)
+			return;
 
 		player_info_t info;
-		if(!gInts.Engine->GetPlayerInfo(index, &info))
-			return false;
+		if(!gInts.Engine->GetPlayerInfo(pBaseEntity->GetIndex(), &info))
+			return;
 
 		if( hitboxes->getValue() == true )
 		{
 			for(int i = 0; i < 17; i++ )
-				FrameHitbox( player, i );
+				FrameHitbox( pBaseEntity, i );
 		}
 
 		if( renderBox->getValue() == true )
 		{
 
-			DynamicBox( player, teamColor );
+			DynamicBox( pBaseEntity, teamColor );
 
 			//int iRadius = 300 / distance;
 
@@ -106,25 +98,25 @@ bool CESP::processEntity(int index)
 
 		if(renderHealth->getValue() == true)
 		{
-			gDrawManager.DrawString("esp", vecScreen.x, vecScreen.y, teamColor, XorString("%i"), player.get<int>(gEntVars.iHealth) /*gInts.GameResource->getHealth(index)*/); //Draw on the player.
+			gDrawManager.DrawString( "esp", vecScreen.x, vecScreen.y, teamColor, XorString( "%i" ), pBaseEntity->GetHealth() /*gInts.GameResource->getHealth(index)*/ ); //Draw on the player.
 			vecScreen.y += gDrawManager.GetESPHeight();
 		}
 
 		if(renderIndex->getValue() == true)
 		{
-			gDrawManager.DrawString("esp", vecScreen.x, vecScreen.y, teamColor, XorString("%i"), player.index()); //Draw on the player.
+			gDrawManager.DrawString( "esp", vecScreen.x, vecScreen.y, teamColor, XorString( "%i" ), pBaseEntity->GetIndex() ); //Draw on the player.
 			vecScreen.y += gDrawManager.GetESPHeight();
 		}
 
 		if(renderViewESP->getValue() == true)
 		{
 
-			Vector angles = player->GetPrevLocalAngles();
+			Vector angles = pBaseEntity->GetPrevLocalAngles();
 			//gDrawManager.DrawString("esp", vecScreen.x, vecScreen.y, COLOR_OBJ, "%f, %f, %f", angles.x, angles.y, angles.z);
 			//vecScreen.y += gDrawManager.GetESPHeight();
 			Vector forward;
 			AngleVectors(angles, &forward);
-			Vector eyepos = player->GetAbsOrigin() + player.get<Vector>(gEntVars.vecViewOffset);
+			Vector eyepos = pBaseEntity->GetAbsOrigin() + pBaseEntity->GetAbsOrigin();
 			forward = forward * viewESPLength->getValue() + eyepos;
 
 			// we cant use the '1 tick' trick here as in paintTraverse, we are run multiple times per tick!
@@ -137,6 +129,9 @@ bool CESP::processEntity(int index)
 				gDrawManager.drawLine(screenForward.x, screenForward.y, screenEyepos.x, screenEyepos.y, teamColor);
 			}
 		}
+
+		drawBoneEsp( pBaseEntity, teamColor );
+
 	}
 	else if(/*id == classId::CObjectDispenser || id == classId::CObjectSapper || id == classId::CObjectSentrygun || id == classId::CObjectTeleporter*/true)
 	{
@@ -144,11 +139,11 @@ bool CESP::processEntity(int index)
 
 		if( renderObjectID->getValue() == true )
 		{
-			gDrawManager.DrawString("esp", vecScreen.x, vecScreen.y, teamColor, XorString("%s"), player->GetClientClass()->chName);
+			gDrawManager.DrawString("esp", vecScreen.x, vecScreen.y, teamColor, XorString("%s"), pBaseEntity->GetClientClass()->chName);
 			vecScreen.y += gDrawManager.GetESPHeight();
 		}
 	}
-	return true;
+	return;
 }
 
 void CESP::menuUpdate( F1_IConVar ** menuArray, int & currIndex )
@@ -170,9 +165,9 @@ void CESP::menuUpdate( F1_IConVar ** menuArray, int & currIndex )
 	}
 }
 
-void CESP::FrameHitbox(CEntity<> player, int iHitbox)
+void CESP::FrameHitbox( CBaseEntity *pBaseEntity, int iHitbox )
 {
-	const PDWORD pModel = player->GetModel();
+	const PDWORD pModel = pBaseEntity->GetModel();
 	if(!pModel)
 		return;
 
@@ -195,7 +190,7 @@ void CESP::FrameHitbox(CEntity<> player, int iHitbox)
 
 	matrix3x4 vMatrix[128];
 
-	if(!player->SetupBones(vMatrix, 128, 0x100, gInts.Globals->curtime))
+	if(!pBaseEntity->SetupBones(vMatrix, 128, 0x100, gInts.Globals->curtime))
 		return;
 
 	Vector vMin = pBox->bbmin;
@@ -221,12 +216,12 @@ void CESP::FrameHitbox(CEntity<> player, int iHitbox)
 	gDrawManager.DrawBox(vTransformed, COLOR_OBJ);
 }
 
-void CESP::DynamicBox(CEntity<> ent, DWORD dwColor)
+void CESP::DynamicBox( CBaseEntity *pBaseEntity, DWORD dwColor )
 {
-	const matrix3x4& trans = *reinterpret_cast<matrix3x4*>(ent.getPtr<DWORD>(gEntVars.rgflCoordinateFrame));
+	const matrix3x4& trans = pBaseEntity->GetRgflCoordinateFrame();
 
-	Vector min = ent.get<Vector>(gEntVars.collision + 0x20);
-	Vector max = ent.get<Vector>(gEntVars.collision + 0x2C);
+	Vector min = pBaseEntity->GetCollideableMins();
+	Vector max = pBaseEntity->GetCollideableMaxs();
 
 	Vector pointList[] = {
 		Vector(min.x, min.y, min.z),
@@ -263,16 +258,16 @@ void CESP::DynamicBox(CEntity<> ent, DWORD dwColor)
 	float right = flb.x;
 	float bottom = flb.y;
 
-	for(int i = 0; i < 8; i++)
+	for( int i = 0; i < 8; i++ )
 	{
-		if(left > arr[i].x)
-			left = arr[i].x;
-		if(top < arr[i].y)
-			top = arr[i].y;
-		if(right < arr[i].x)
-			right = arr[i].x;
-		if(bottom > arr[i].y)
-			bottom = arr[i].y;
+		if( left > arr[ i ].x )
+			left = arr[ i ].x;
+		if( top < arr[ i ].y )
+			top = arr[ i ].y;
+		if( right < arr[ i ].x )
+			right = arr[ i ].x;
+		if( bottom > arr[ i ].y )
+			bottom = arr[ i ].y;
 	}
 
 	float x = left;
@@ -280,14 +275,22 @@ void CESP::DynamicBox(CEntity<> ent, DWORD dwColor)
 	float w = right - left;
 	float h = top - bottom;
 
+	// TODO change this to a convar
+	if( false )
+	{
+		gDrawManager.DrawCornerBox( x - 1, y - 1, w + 2, h + 1, 3, 5, COLOR_BLACK );
+		gDrawManager.DrawCornerBox( x, y, w, h - 1, 3, 5, dwColor );
+	}
+	else if(true )
+	{
+		gDrawManager.DrawBox( transformed, dwColor );
+	}
 
-	tf_classes Class = ent.get<tf_classes>(gEntVars.iClass);
 
-	gDrawManager.DrawCornerBox(x - 1, y - 1, w + 2, h + 1, 3, 5, COLOR_BLACK);
-	gDrawManager.DrawCornerBox(x, y, w, h - 1, 3, 5, dwColor);
 
-	int health = ent.get<int>(gEntVars.iHealth);
+	int health = pBaseEntity->GetHealth();
 
+	tf_classes Class = pBaseEntity->GetClass();
 	int maxHealth = getMaxHealth(Class);
 
 	if(health > maxHealth)
@@ -302,11 +305,9 @@ void CESP::DynamicBox(CEntity<> ent, DWORD dwColor)
 	gDrawManager.OutlineRect(x - 5, y - 1, 5, h + 2, COLOR_BLACK);
 	gDrawManager.DrawRect(x - 4, y + healthBarDelta, 3, healthBar, redGreenGradiant(health, maxHealth));
 	//-------------------------------------------------------------------------------------------------------------
-
-	drawBoneEsp(ent, dwColor);
 }
 
-void CESP::drawBoneEsp(CEntity<> ent, DWORD color)
+void CESP::drawBoneEsp( CBaseEntity *pBaseEntity, DWORD color )
 {
 	if( renderBones->getValue() )
 	{
@@ -317,7 +318,7 @@ void CESP::drawBoneEsp(CEntity<> ent, DWORD color)
 		static const tf_hitbox leftLeg[ ] = { tf_hitbox::foot_L, tf_hitbox::knee_L, tf_hitbox::pelvis };
 		static const tf_hitbox rightLeg[ ] = { tf_hitbox::foot_R, tf_hitbox::knee_R, tf_hitbox::pelvis };
 
-		const PDWORD pModel = ent->GetModel();
+		const PDWORD pModel = pBaseEntity->GetModel();
 		if( !pModel )
 			return;
 
@@ -335,7 +336,7 @@ void CESP::drawBoneEsp(CEntity<> ent, DWORD color)
 
 		static matrix3x4 BoneToWorld[ 128 ];
 
-		if( !ent->SetupBones( BoneToWorld, 128, 0x100, 0 ) )
+		if( !pBaseEntity->SetupBones( BoneToWorld, 128, 0x100, 0 ) )
 			return;
 
 		int HitboxSetIndex = *( int * ) ( ( DWORD ) pStudioHdr + 0xB0 );

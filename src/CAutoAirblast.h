@@ -5,7 +5,7 @@
 #include "CTargetHelper.h"
 #include "CAimHelper.h"
 
-class CAutoAirblast : public IHack
+class CAutoAirblast : public IHack<CAutoAirblast>
 {
 	//bool enabled;
 	//bool breakMode;
@@ -17,24 +17,24 @@ class CAutoAirblast : public IHack
 	F1_ConVar<bool> *enabled;
 	F1_ConVar<bool> *aimMode;
 
-
-	// std::unordered_map<int, float> targets;
-
-	// maps entity indexes to their distance
-	CDistanceTargetSystem targs;
-
 	CSnapAimSystem aimer;
+
+	DWORD targetHelperKey;
 
 public:
 	CAutoAirblast();
 
 	// Inherited via IHack
-	virtual const char *name() const override;
-	virtual void processCommand(CUserCmd *pUserCmd) override;
-	virtual bool processEntity(int index) override;
+	const char *name() const;
+	void processCommand(CUserCmd *pUserCmd);
 
 	void menuUpdate( F1_IConVar **menuArray, int &currIndex );
+
+	bool isValidTarget( int index );
+	bool isVisibleTarget( int index, Vector &t );
 
 private:
 	// int findBestTarget();
 };
+
+extern CAutoAirblast gAutoAirblast;

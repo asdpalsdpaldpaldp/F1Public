@@ -21,31 +21,6 @@ enum class EntTag : int
 	PROJECTILE = (1 << 10),
 };
 
-// and operator
-inline EntTag operator&(EntTag local, EntTag other)
-{
-	return static_cast<EntTag>(static_cast<int>(local) & static_cast<int>(other));
-}
-// or operator
-inline EntTag operator|(EntTag local, EntTag other)
-{
-	return static_cast<EntTag>(static_cast<int>(local) | static_cast<int>(other));
-}
-// and equals
-inline EntTag operator&=(EntTag &local, EntTag other)
-{
-	int &loc = (int &)local;
-
-	return static_cast<EntTag>(loc &= static_cast<int>(other));
-}
-// or equals operator
-inline EntTag operator|=(EntTag &local, EntTag other)
-{
-	int &loc = (int &)local;
-
-	return static_cast<EntTag>(loc |= static_cast<int>(other));
-}
-
 class CEntTag
 {
 	EntTag tags;

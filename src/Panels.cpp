@@ -4,6 +4,11 @@
 
 #include "Util.h"
 
+#include "modules.h"
+
+DEFINE_RECURSE_CALL_FUNCTION_NO_ARGS( _paint );
+DEFINE_RECURSE_CALL_FUNCTION_1_ARG( _processEntity, CBaseEntity * );
+
 //===================================================================================
 void __fastcall CHack::Hooked_PaintTraverse(PVOID pPanels, int edx, unsigned int vguiPanel, bool forceRepaint, bool allowForce)
 {
@@ -58,33 +63,50 @@ void __fastcall CHack::Hooked_PaintTraverse(PVOID pPanels, int edx, unsigned int
 			//gDrawManager.DrawString("hud", 0, y, COLOR_OBJ, "diff: %f", gLocalPlayerVars.flNextAttack - gInts.Globals->curtime);
 			//debugTexty += gDrawManager.GetHudHeight();
 
-			int i = 0;
-			auto *pHack = gHack.pHackArray[ i++ ];
-			while( pHack != NULL )
+			//int i = 0;
+			//auto *pHack = gHack.pHackArray[ i++ ];
+			//while( pHack != NULL )
+			//{
+			//	pHack->paint();
+
+			//	// this can probably be improved
+			//	for( int j = 1; j < gInts.EntList->GetHighestEntityIndex(); j++ )
+			//	{
+			//		auto *pBaseEntity = gInts.EntList->GetClientEntity( j );
+
+			//		// do not call for null entitys (theres no point)
+			//		if( pBaseEntity != NULL && pBaseEntity->GetIndex() != me )
+			//		{
+			//			_TRY
+			//			{
+			//				pHack->processEntity( pBaseEntity );
+			//			}
+			//			_CATCH_SEH_REPORT_ERROR( pHack, processEntity() );
+			//		}
+			//	}
+
+			//	pHack = gHack.pHackArray[ i++ ];
+			//}
+
+			RecurseCall_paint( ACTIVE_HACKS );
+
+			// this can probably be improved
+			for( int j = 1; j < gInts.EntList->GetHighestEntityIndex(); j++ )
 			{
-				pHack->paint();
+				auto *pBaseEntity = gInts.EntList->GetClientEntity( j );
 
-				// this can probably be improved
-				for( int j = 1; j < gInts.EntList->GetHighestEntityIndex(); j++ )
+				// do not call for null entitys (theres no point)
+				if( pBaseEntity != NULL && pBaseEntity->GetIndex() != me )
 				{
-					auto *pBaseEntity = gInts.EntList->GetClientEntity( j );
-
-					// do not call for null entitys (theres no point)
-					if( pBaseEntity != NULL && pBaseEntity->GetIndex() != me )
-					{
-						_TRY
-						{
-							pHack->processEntity( j );
-						}
-						_CATCH_SEH_REPORT_ERROR( pHack, processEntity() );
-					}
+					RecurseCall_processEntity( pBaseEntity, ACTIVE_HACKS );
 				}
-
-				pHack = gHack.pHackArray[ i++ ];
 			}
 
 			for( auto &window : gHack.windowArray )
 			{
+
+				// TODO maybe switch the order of these?
+				
 				// render each window
 				window->render();
 
@@ -92,10 +114,6 @@ void __fastcall CHack::Hooked_PaintTraverse(PVOID pPanels, int edx, unsigned int
 				window->think();
 			}
 		}
-	}
-	_CATCHMODULE
-	{
-		Log::Error( "%s", e.what() );
 	}
 	_CATCH
 	{

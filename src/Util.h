@@ -89,7 +89,39 @@ inline bool bulletTime(CEntity<> &ent, bool shouldUseIntervals)
 	return canTickbase;
 }
 
+// assumes the entity is valid
+inline bool bulletTime(CBaseEntity *pBaseEntity, bool)
+{
+	// either use intervals or use 1
+	float interval = gInts.Globals->interval_per_tick;
+
+	float tickBase = static_cast<float>( pBaseEntity->GetTickBase() ) * interval;
+
+	float nextAttack = gLocalPlayerVars.flNextAttack;
+
+	bool canTickbase = nextAttack > tickBase;
+
+	bool canCurTime = nextAttack > tickBase * interval;
+
+	//Log::Console("bullettime? tickbase: %s curTime: %s", canTickbase ? "true" : "false", canCurTime ? "true" : "false");
+
+	return canTickbase;
+}
+
 inline bool bCanShoot(CEntity<> &ent, CUserCmd *pUserCmd)
+{
+	bool bBulletTime = true;
+
+	if(bulletTime(ent, true))
+		bBulletTime = false;
+
+	if(bBulletTime)
+		return true;
+
+	return false;
+}
+
+inline bool bCanShoot(CBaseEntity *ent, CUserCmd *pUserCmd)
 {
 	bool bBulletTime = true;
 
@@ -229,7 +261,7 @@ public:
 		float curTime = gInts.Globals->curtime;
 
 		// set up the globals
-		gInts.Globals->curtime = CEntity<>{ pBaseEnt }.get<float>( gEntVars.nTickBase ) * gInts.Globals->interval_per_tick;
+		gInts.Globals->curtime = pBaseEnt->GetTickBase() * gInts.Globals->interval_per_tick;
 		gInts.Globals->frametime = gInts.Globals->interval_per_tick;
 
 		runSimulation(pred, pCommand->command_number, curTime, pCommand, pBaseEnt);
@@ -246,7 +278,7 @@ public:
 		float curTime   = gInts.Globals->curtime;
 
 		// set up the globals
-		gInts.Globals->curtime = CEntity<>{ pBaseEnt }.get<float>( gEntVars.nTickBase ) * gInts.Globals->interval_per_tick;
+		gInts.Globals->curtime = pBaseEnt->GetTickBase() * gInts.Globals->interval_per_tick;
 		gInts.Globals->frametime = gInts.Globals->interval_per_tick;
 
 		CUserCmd cmd;
@@ -292,7 +324,7 @@ public:
 		// do actual player cmd prediction
 		gInts.Prediction->SetupMove( pEnt, &cmd, gInts.MoveHelper, &moveData );
 		gInts.GameMovement->ProcessMovement( pEnt, &moveData );
-		gInts.Prediction->RunCommand( pEnt, &cmd, gInts.MoveHelper );
+		//gInts.Prediction->RunCommand( pEnt, &cmd, gInts.MoveHelper );
 		gInts.Prediction->FinishMove( pEnt, &cmd, &moveData );
 
 		gInts.GameMovement->FinishTrackPredictionErrors( pEnt );
@@ -305,37 +337,45 @@ public:
 		gInts.Globals->curtime = curTime;
 	}
 
-	static void predictVectorForPlayer(Vector &v, CBaseEntity *ent)
+	static void safeRunCommand(CPrediction *pred, CBaseEntity *pEnt)
 	{
-		predictVectorForPlayer(v, ent, gInts.Globals->curtime);
-		return;
-	}
+		assert(pEnt);
 
-	static void predictVectorForPlayer(Vector &v, CBaseEntity *ent, float time)
-	{
-		auto cmd = std::make_unique<CUserCmd>();
+		if(pEnt->IsDormant())
+			return;
 
+		// back up globals
 		float frameTime = gInts.Globals->frametime;
-		float currTime  = gInts.Globals->curtime;
+		float curTime = gInts.Globals->curtime;
 
-		Vector oldOrigin = ent->GetAbsOrigin();
+		// set up the globals
+		gInts.Globals->curtime = pEnt->GetTickBase() * gInts.Globals->interval_per_tick;
+		gInts.Globals->frametime = gInts.Globals->interval_per_tick;
 
-		//gInts.Prediction->SetupMove(ent, cmd, gInts.MoveHelper, pMoveData);
-		//gInts.Prediction->RunCommand(ent, cmd, gInts.MoveHelper);
-		runSimulation(gInts.Prediction, gLocalPlayerVars.cmdNum, time, cmd.get(), ent);
-		//gInts.Prediction->FinishMove(ent, cmd, pMoveData);
+		CUserCmd cmd;
 
-		Vector delta = ent->GetAbsOrigin() - oldOrigin;
+		CMoveData moveData;
+		memset(&moveData, 0, sizeof(CMoveData));
 
-		// relate that to the vector
-		v += delta;
+		// set the current cmd
+		pEnt->set(0x107C, &cmd);
+
+		gInts.GameMovement->StartTrackPredictionErrors(pEnt);
+
+		// do actual player cmd prediction
+		gInts.Prediction->SetupMove(pEnt, &cmd, gInts.MoveHelper, &moveData);
+		gInts.GameMovement->ProcessMovement(pEnt, &moveData);
+		//gInts.Prediction->RunCommand( pEnt, &cmd, gInts.MoveHelper );
+		gInts.Prediction->FinishMove(pEnt, &cmd, &moveData);
+
+		gInts.GameMovement->FinishTrackPredictionErrors(pEnt);
+
+		// reset the current cmd
+		pEnt->set(0x107C, 0);
 
 		// restore globals
 		gInts.Globals->frametime = frameTime;
-		gInts.Globals->curtime   = currTime;
-
-		// v is returned by reference
-		return;
+		gInts.Globals->curtime = curTime;
 	}
 };
 
@@ -376,6 +416,33 @@ inline int getMaxHealth(CEntity<> &ent)
 	return 0;
 }
 
+inline int getMaxHealth( tf_classes Class )
+{
+	switch( Class )
+	{
+	case tf_classes::TF2_Scout:
+		return 125;
+	case tf_classes::TF2_Sniper:
+		return 125;
+	case tf_classes::TF2_Soldier:
+		return 200;
+	case tf_classes::TF2_Demoman:
+		return 175;
+	case tf_classes::TF2_Medic:
+		return 150;
+	case tf_classes::TF2_Heavy:
+		return 300;
+	case tf_classes::TF2_Pyro:
+		return 175;
+	case tf_classes::TF2_Spy:
+		return 125;
+	case tf_classes::TF2_Engineer:
+		return 125;
+	default:
+		return 100;
+	}
+}
+
 inline std::string getPathForDll(HMODULE module)
 {
 	std::string ret;
@@ -414,33 +481,6 @@ inline void VectorTransform(Vector &in1, const matrix3x4 &in2, Vector &out)
 	out[2] = (in1[0] * in2[2][0] + in1[1] * in2[2][1] + in1[2] * in2[2][2]) + in2[2][3];
 }
 
-inline int getMaxHealth(tf_classes Class)
-{
-	switch(Class)
-	{
-	case tf_classes::TF2_Scout:
-			return 125;
-	case tf_classes::TF2_Sniper:
-			return 125;
-	case tf_classes::TF2_Soldier:
-			return 200;
-	case tf_classes::TF2_Demoman:
-			return 175;
-	case tf_classes::TF2_Medic:
-			return 150;
-	case tf_classes::TF2_Heavy:
-			return 300;
-	case tf_classes::TF2_Pyro:
-			return 175;
-	case tf_classes::TF2_Spy:
-			return 125;
-	case tf_classes::TF2_Engineer:
-			return 125;
-	default:
-		return 100;
-	}
-}
-
 inline DWORD redGreenGradiant(float percent)
 {
 	if(percent < 0 || percent > 1) { return COLORCODE(0, 0, 0, 255); }
@@ -461,7 +501,7 @@ inline DWORD redGreenGradiant(float percent)
 
 inline DWORD redGreenGradiant(int i, int max)
 {
-	float percent = (float)i / (float)max;
+	float percent = float(i) / float(max);
 	return redGreenGradiant(percent);
 }
 
@@ -495,6 +535,9 @@ inline void hash_combine(std::size_t& seed, const T& v)
 	seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 }
 
+
+int GetNumHitboxes(CBaseEntity *ent);
+
 #include "F1_Gui.h"
 
 class CUtil
@@ -502,7 +545,8 @@ class CUtil
 public:
 	static int mouseState;
 	static bool cursorVisible;
-
+	static bool softwareCursor;
+	
 	// 0 for locked, 1 for unlocked
 	static void setMouseState( int state )
 	{
@@ -512,11 +556,19 @@ public:
 	{
 		cursorVisible = visible;
 	}
+	static void setSoftwareCursor(bool enabled)
+	{
+		if(softwareCursor == false)
+			softwareCursor = true;
+	}
 
 	static bool isPointWithinRange( F1_Point p, F1_Point xy, F1_Point wh )
 	{
 		return ( ( p.x > xy.x ) && ( p.y > xy.y ) && ( p.x < ( xy.x + wh.x ) ) && ( p.y < ( xy.y + wh.y ) ) );
 	}
+	
+	// ai or real player (robot or not)
+	static bool isPlayer( CBaseEntity *pBaseEntity );
 
 	static F1_Point getMousePos();
 };

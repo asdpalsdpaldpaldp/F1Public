@@ -439,4 +439,11 @@ public:
 		typedef void(__thiscall * OriginalFn)(PVOID, const Ray_t &, unsigned int, ITraceFilter *, trace_t *);
 		return getvfunc<OriginalFn>(this, 4)(this, ray, fMask, pTraceFilter, pTrace);
 	}
+	void SweepCollideable( ICollideable *pCollide, const Vector &vecAbsStart, const Vector &vecAbsEnd,
+		const Vector &vecAngles, unsigned int fMask, ITraceFilter *pTraceFilter, trace_t *pTrace )
+	{
+		typedef void( __thiscall * OriginalFn )( PVOID, ICollideable *, const Vector &, const Vector &,
+			const Vector &, unsigned int, ITraceFilter *, trace_t * );
+		return getvfunc<OriginalFn>( this, 8 )( this, pCollide, vecAbsStart, vecAbsEnd, vecAngles, fMask, pTraceFilter, pTrace );
+	}
 };

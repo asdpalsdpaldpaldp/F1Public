@@ -125,6 +125,12 @@ void HState::init()
 		auto physicsFactory = srcFactory(GetProcAddress(gSignatures.GetModuleHandleSafe("vphysics.dll"), "CreateInterface"));
 		gInts.PhysicsSurfaceProps = physicsFactory.get<IPhysicsSurfaceProps *>("VPhysicsSurfaceProps001");
 
+		// == SERVER ==
+		gInts.LagCompensation = *( ILagCompensationManager ** ) ( gSignatures.GetServerSignature( "8B 0D ? ? ? ? 8B 75 E8 56" ) + 0x2 );
+
+		DWORD dwDemoPlayer = gSignatures.GetEngineSignature("8B 0D ? ? ? ? 50 FF 56 14") + 0x2;
+		gInts.DemoPlayer = *reinterpret_cast<CDemoPlayer **>(dwDemoPlayer);
+
 		// with new not_nulls, panels is garenteed not to be null
 		//VMTBaseManager *panelHook = new VMTBaseManager(); //Setup our VMTBaseManager for Panels.
 		//panelHook->Init(gInts.Panels);

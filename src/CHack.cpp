@@ -22,37 +22,41 @@
 #include "CAntiSmac.h"
 #include "CPlayerManager.h"
 
+#include "modules.h"
+
 CScreenSize gScreenSize;
+
+DEFINE_RECURSE_CALL_FUNCTION_NO_ARGS( init );
 
 CHack::CHack() : menu( 100, 100, 200 )
 {
 	// 0 out hack array
-	memset( pHackArray, 0, sizeof( pHackArray ) );
+	//memset( pHackArray, 0, sizeof( pHackArray ) );
 
-	auto radar = new CRadar();
+	//auto radar = new CRadar();
 
 	// for ease of use
-	int currIndex = 0;
+	//int currIndex = 0;
 
 	// TODO add hacks here
-	pHackArray[ currIndex++ ] = new CESP();
-	//pHackArray[ currIndex++ ] = new CGlow();
-	pHackArray[ currIndex++ ] = new CAimbot();
-	pHackArray[ currIndex++ ] = radar;
-	pHackArray[ currIndex++ ] = new CAntiaim();
-	pHackArray[ currIndex++ ] = new CAntiSmac();
-	pHackArray[ currIndex++ ] = new CPureBypass();
-	pHackArray[ currIndex++ ] = new CMisc();
-	pHackArray[ currIndex++ ] = new CBackstab();
-	pHackArray[ currIndex++ ] = new CTrigger();
-	pHackArray[ currIndex++ ] = new CAutoAirblast();
-	pHackArray[ currIndex++ ] = this;
-	pHackArray[ currIndex++ ] = &gPlayerManager;
-	pHackArray[ currIndex++ ] = new CAnnouncer();
-	pHackArray[ currIndex++ ] = new CPureBypass();
+	//pHackArray[ currIndex++ ] = new CESP();
+	////pHackArray[ currIndex++ ] = new CGlow();
+	//pHackArray[ currIndex++ ] = new CAimbot();
+	//pHackArray[ currIndex++ ] = radar;
+	//pHackArray[ currIndex++ ] = new CAntiaim();
+	//pHackArray[ currIndex++ ] = new CAntiSmac();
+	//pHackArray[ currIndex++ ] = new CPureBypass();
+	//pHackArray[ currIndex++ ] = new CMisc();
+	//pHackArray[ currIndex++ ] = new CBackstab();
+	//pHackArray[ currIndex++ ] = new CTrigger();
+	//pHackArray[ currIndex++ ] = new CAutoAirblast();
+	//pHackArray[ currIndex++ ] = this;
+	//pHackArray[ currIndex++ ] = &gPlayerManager;
+	//pHackArray[ currIndex++ ] = new CAnnouncer();
+	//pHackArray[ currIndex++ ] = new CPureBypass();
 
 	windowArray.push_back( &menu );
-	windowArray.push_back( radar );
+	windowArray.push_back( &gRadar );
 
 	// set up our convars
 	hackSwitch = new F1_ConVar<Switch>( "Hack", false );
@@ -107,18 +111,23 @@ void CHack::intro()
 		//}
 
 		// run their init function (this could be rolled into the constructor?
-		int i = 0;
-		auto *pHack = gHack.pHackArray[ i++ ];
-		while( pHack != NULL )
-		{
-			_TRY
-			{
-				pHack->init();
-				pHack = pHackArray[ i++ ];
-			}
-			_CATCH_SEH_REPORT_ERROR( pHack, init() );
+		//int i = 0;
+		//auto *pHack = gHack.pHackArray[ i++ ];
+		//while( pHack != NULL )
+		//{
+		//	_TRY
+		//	{
+		//		pHack->init();
+		//		pHack = pHackArray[ i++ ];
+		//	}
+		//	_CATCH_SEH_REPORT_ERROR( pHack, init() );
 
+		//}
+		_TRY
+		{
+			RecurseCallinit( ACTIVE_HACKS );
 		}
+		_CATCH_SEH_REPORT_ERROR( this, RecurseCallinit );
 
 		// intro printing stuff to console
 
@@ -151,13 +160,6 @@ void CHack::intro()
 		Log::Msg(XorString("Injection Successful")); //If the module got here without crashing, it is good day.
 
 		//ConVar_Register(0);
-	}
-	_CATCHMODULE
-	{
-		//Log::Fatal("%s", XorString("Failed Intro"));
-
-		// failing intro is kinda fatal
-		Log::Fatal("%s", e.what());
 	}
 	_CATCH
 	{

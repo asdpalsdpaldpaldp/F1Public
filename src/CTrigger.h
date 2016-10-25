@@ -6,7 +6,7 @@
 #include "Vector.h"
 #include "SDK.h"
 
-class CTrigger : public IHack
+class CTrigger : public IHack<CTrigger>
 {
 
 	//bool enabled, hitAll, useHitbox, zoomedOnly;
@@ -61,11 +61,11 @@ public:
 		zoomedOnly = new F1_ConVar<bool>( " - Zoomed only", false );
 	}
 
-	const char *name() const override;
-	bool paint() override;
-	void processCommand(CUserCmd *pUserCmd) override;
+	const char *name() const;
+	bool paint();
+	void processCommand(CUserCmd *pUserCmd);
 
-	void menuUpdate( F1_IConVar **menuArray, int &currIndex ) override;
+	void menuUpdate( F1_IConVar **menuArray, int &currIndex );
 
 private:
 	// Vector curr_angles, curr_direction, curr_ray, curr_endpos, curr_pos;
@@ -74,3 +74,5 @@ private:
 
 	// bool curr_ent_null;
 };
+
+extern CTrigger gTrigger;

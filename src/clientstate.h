@@ -193,13 +193,14 @@ struct AddAngle
 
 // =========================================================================
 // CBaseClientState
-// THIS IS AN ABSTRACT CLASS - DO NOT CONSTRUCT OR DESTRUCT IT
+// This can only really be used as a place holder as the compiler optimizes many of the internals as static variables
+// It is also possible that this has changed since 2007
 // =========================================================================
 class CBaseClientState : public INetChannelHandler, public IConnectionlessPacketHandler, public IServerMessageHandler
 {
 
 public:
-	CBaseClientState();
+	CBaseClientState() = delete;
 	virtual ~CBaseClientState();
 
 public: // IConnectionlessPacketHandler interface:
@@ -355,7 +356,7 @@ class CClientState : public CBaseClientState, public CClientFrameManager
 	} CustomFile_t;
 
 public:
-	CClientState();
+	CClientState() = delete;
 	~CClientState();
 
 public: // IConnectionlessPacketHandler interface:

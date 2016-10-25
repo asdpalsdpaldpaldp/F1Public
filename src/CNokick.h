@@ -3,7 +3,7 @@
 #include "IHack.h"
 #include "SDK.h"
 
-class CNokick : public IHack
+class CNokick : public IHack<CNokick>
 {
 
 	//VMTBaseManager *playSoundHook;
@@ -25,13 +25,13 @@ public:
 	}
 
 	// Inherited via IHack
-	const char *name() const override;
+	const char *name() const;
 
-	void processCommand(CUserCmd *pUserCmd) override;
+	void processCommand(CUserCmd *pUserCmd);
 
 	bool userMessage(int type, bf_read &data);
 
-	void init() override;
+	void init();
 
 	bool emitSound(const char *sound);
 
@@ -41,3 +41,5 @@ private:
 	// get the current number of players on our team
 	int getNumOfPlayers();
 };
+
+extern CNokick gNokick;

@@ -41,14 +41,14 @@ void CAntiSmac::init()
 
 	gHookManager.hookMethod(gInts.ClientState.get(), gOffsets.processGetCvarValue, &Hooked_ProcessGetCvarValue, 0x8);
 	gHookManager.hookMethod(gInts.ClientState.get(), gOffsets.processSetConVar, &Hooked_ProcessSetConVar, 0x8);
-/*
-	#if _MSC_VER == 1900
 
 	// open this file for reading
 	auto handle = gFileManager.open(getPathForDll(gInts.thisDll) + "..\\config\\CAntiSmac.txt", std::ios::in);
 
 	if( handle == CFileManager::invalidHandle )
 		Log::Console( "unable to get CAntiSmac.txt config file" );
+
+	return;
 
 	// tokenize this file when we start
 	cvarList = gFileManager.TokenFile(handle, ':');
@@ -57,15 +57,12 @@ void CAntiSmac::init()
 
 	//nameVar->m_fnChangeCallback = nullptr;
 
-	#endif
-*/
-
 	return;
 }
 
 void CAntiSmac::processCommand(CUserCmd *pUserCmd)
 {
-	if(nameSpam->getValue() == true)
+	if(nameSpam.getValue() == true)
 	{
 		// Log::Console("NameSpam enabled");
 		std::string randName;
@@ -221,10 +218,11 @@ bool CAntiSmac::processStringCmd(NET_StringCmd *msg)
 
 void CAntiSmac::menuUpdate( F1_IConVar ** menuArray, int & currIndex )
 {
-	menuArray[ currIndex++ ] = antiSmacSwitch;
+	menuArray[ currIndex++ ] = &antiSmacSwitch;
 
-	if(antiSmacSwitch->getValue() )
+	if(antiSmacSwitch.getValue() )
 	{
-		menuArray[ currIndex++ ] = nameSpam;
+		menuArray[currIndex++] = &debug;
+		menuArray[ currIndex++ ] = &nameSpam;
 	}
 }

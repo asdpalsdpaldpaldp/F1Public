@@ -4,6 +4,8 @@
 #include "CEntity.h"
 #include "Util.h"
 
+CAutoAirblast gAutoAirblast;
+
 CAutoAirblast::CAutoAirblast()
 {
 	autoAirblastSwitch = new F1_ConVar<Switch>( "Auto Airblast", false );
@@ -17,10 +19,38 @@ void CAutoAirblast::processCommand(CUserCmd *pUserCmd)
 {
 	if(!enabled->getValue())
 		return;
+	else
+	{
+		static bool oneTime = false;
+
+		if(oneTime == false )
+		{
+			if(gTargetHelper.tryBecomeOwner(targetHelperKey) )
+			{
+				gTargetHelper.setValidTargetFn( targetHelperKey, [this]( int index ) -> bool { return this->isValidTarget( index ); } );
+				gTargetHelper.setVisibleTargetFn( targetHelperKey, [this]( int index, Vector &t ) -> bool { return this->isVisibleTarget( index, t ); } );
+				gTargetHelper.setCompareTarget( targetHelperKey, [ ]( const CTarget &b, const CTarget &n ) -> bool
+				{
+					// doesnt really matter as once one is within range, we will airblast
+					if( __CTargetHelper::getDistanceToVector( b.target ) < __CTargetHelper::getDistanceToVector( n.target ) )
+						return false;
+
+					return true;
+				} );
+
+				oneTime = true;
+			}
+			else
+			{
+				Log::Msg( "Please disable the current module using the GlobalTargetSystem" );
+				enabled->decrement();
+			}
+		}
+	}
 
 	if(gLocalPlayerVars.activeWeapon == classId::CTFFlameThrower)
 	{
-		CTarget closeIndex = targs.getBestTarget();
+		CTarget closeIndex = gTargetHelper.getBestTarget();
 
 		if(closeIndex.ent == -1)
 			return;
@@ -32,81 +62,8 @@ void CAutoAirblast::processCommand(CUserCmd *pUserCmd)
 		}
 
 		pUserCmd->buttons |= IN_ATTACK2;
-
-		targs.removeTarget( closeIndex.ent );
 	}
 	return;
-}
-
-bool CAutoAirblast::processEntity(int index)
-{
-	if(!enabled)
-		return false;
-
-	CEntity<> ent{index};
-
-	if(ent.isNull())
-	{
-		targs.removeTarget(index);
-		return false;
-	}
-
-	if(ent->IsDormant())
-	{
-		targs.removeTarget(index);
-		return false;
-	}
-
-	// if the projectile is from our own team we dont want or need to reflect it
-	if(ent.get<int>(gEntVars.iTeam) == gLocalPlayerVars.team)
-	{
-		targs.removeTarget(index);
-		return false;
-	}
-
-	auto entTag = CEntTag(ent.castToPointer<CBaseEntity>());
-
-	Vector vel;
-
-	if( entTag.isProjectile() )
-	{
-		vel = EstimateAbsVelocity( ent.castToPointer<CBaseEntity>() );
-
-		//if( vel == Vector(0,0,0) )
-		//{
-		//	targs.removeTarget( index );
-		//	return false;
-		//}
-	}
-	else
-	{
-		targs.removeTarget( index );
-		return false;
-	}
-
-	Vector origin;
-	ent->GetWorldSpaceCenter(origin);
-
-	Vector eyePos = gLocalPlayerVars.pred.origin + CEntity<>{me}.get<Vector>(gEntVars.vecViewOffset);
-
-	float latency = gInts.Engine->GetNetChannelInfo()->GetLatency(FLOW_INCOMING) + gInts.Engine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING);
-
-	Vector target = origin + (vel * latency);
-
-	//gInts.DebugOverlay->AddEntityTextOverlay( index, 0, 1, 255, 255, 255, 255, "%f", ::getDistanceToVector( target ) );
-
-	float length = ( target - eyePos ).Length();
-
-	if( length <= ( 185.0f ) )
-	{
-		//Log::Console( "Target at %f dist", length );
-		targs.addTarget( { index, (target - eyePos) } );
-	}
-	else
-	{
-	}
-
-	return true;
 }
 
 void CAutoAirblast::menuUpdate( F1_IConVar **menuArray, int &currIndex )
@@ -118,6 +75,78 @@ void CAutoAirblast::menuUpdate( F1_IConVar **menuArray, int &currIndex )
 		menuArray[ currIndex++ ] = enabled;
 		menuArray[ currIndex++ ] = aimMode;
 	}
+}
+
+bool CAutoAirblast::isValidTarget( int index )
+{
+
+	CBaseEntity *pBaseEntity = GetBaseEntity( index );
+
+	if( pBaseEntity == NULL )
+	{
+		return false;
+	}
+
+	if( pBaseEntity->IsDormant() )
+	{
+		return false;
+	}
+
+	// if the projectile is from our own team we dont want or need to reflect it
+	if( pBaseEntity->GetTeam() == gLocalPlayerVars.team )
+	{
+		return false;
+	}
+
+	auto entTag = CEntTag( pBaseEntity );
+
+	Vector vel;
+
+	if( entTag.isProjectile() )
+	{
+		return true;
+	}
+
+	return false;
+}
+
+bool CAutoAirblast::isVisibleTarget( int index, Vector &t )
+{
+	CBaseEntity *pBaseEntity = GetBaseEntity( index );
+
+	Vector vel = EstimateAbsVelocity( pBaseEntity );
+
+	//if( vel == Vector(0,0,0) )
+	//{
+	//	targs.removeTarget( index );
+	//	return false;
+	//}
+
+	if( vel == Vector( 0, 0, 0 ) )
+	{
+		return false;
+	}
+
+	Vector origin;
+	pBaseEntity->GetWorldSpaceCenter( origin );
+
+	Vector eyePos = GetBaseEntity(me)->GetAbsOrigin() + gLocalPlayerVars.viewOffset;
+
+	float latency = gInts.Engine->GetNetChannelInfo()->GetLatency( FLOW_INCOMING ) + gInts.Engine->GetNetChannelInfo()->GetLatency( FLOW_OUTGOING );
+
+	Vector target = origin + ( vel * latency );
+
+	//gInts.DebugOverlay->AddEntityTextOverlay( index, 0, 1, 255, 255, 255, 255, "%f", ::getDistanceToVector( target ) );
+
+	float length = ( target - eyePos ).Length();
+
+	if( length <= ( 185.0f ) )
+	{
+		//Log::Console( "Target at %f dist", length );
+		return true;
+	}
+
+	return false;
 }
 
 /*

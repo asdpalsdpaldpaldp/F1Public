@@ -5,48 +5,44 @@
 #include "Trace.h"
 #include "Util.h"
 
+CBackstab gBackstab;
+
 const char *CBackstab::name() const { return "AUTO-BACKSTAB"; }
 
-void CBackstab::processCommand(CUserCmd *pUserCmd)
+void CBackstab::processCommandBeforePred(CUserCmd *pUserCmd)
 {
 	// if the hack is not enabled
 	if(!enabled->getValue())
 		return;
 
-	// testing auto backstabb - works
-	CEntity<> localPlayer(me);
+	CBaseEntity *pLocalEntity = GetBaseEntity( me );
 
-	if(localPlayer.isNull())
+	if(pLocalEntity == nullptr)
 		return;
 
-	DWORD hActiveWeapon = *localPlayer.getPtr<DWORD>(gEntVars.hActiveWeapon);
+	CBaseCombatWeapon *pBaseCombatWeapon =  (CBaseCombatWeapon *)pLocalEntity->GetActiveWeapon();
 
-	// if the handle is not valid
-	if(!hActiveWeapon || hActiveWeapon == -1)
+	if( pBaseCombatWeapon == nullptr) // is not null
 		return;
 
-	// get entity index from handle
-	int localWeaponIndex = hActiveWeapon & 0xFFF;
-
-	// set up entity from index of handle
-	CEntity<CBaseCombatWeapon> weapon(localWeaponIndex);
-
-	if(weapon.isNull()) // is not null
-		return;
-
-	if(!CEntTag{weapon.castToPointer<CBaseEntity>()}.isMelee())
+	if( !CEntTag{ pBaseCombatWeapon }.isWeap() )
 		return;
 
 	//if(!weapon.get<bool>(gEntVars.bReadyToBackstab)) // is ready to backstab
 	//	return false;
 
-	char *name = weapon->GetName();
+	//char *name = pBaseCombatWeapon->GetName();
 
-	if(name[10] == 'k' && name[11] == 'n') // check the important characters - there is only one weapon with a [k] and an [n] at pos 10 and 11
+	if(/*name[10] == 'k' && name[11] == 'n'*/ pBaseCombatWeapon->GetClientClass()->iClassID == classId::CTFKnife) // check the important characters - there is only one weapon with a [k] and an [n] at pos 10 and 11
 	{
 		// TODO fixme
-		if(!canBackstab(weapon, localPlayer))
+
+		//gInts.LagCompensation->StartLagCompensation( localPlayer.castToPointer<CBaseEntity>(), pUserCmd );
+
+		if(!canBackstab( pBaseCombatWeapon, pLocalEntity))
 			return;
+
+		//gInts.LagCompensation->FinishLagCompensation( localPlayer.castToPointer<CBaseEntity>() );
 
 		pUserCmd->buttons |= IN_ATTACK;
 	}
@@ -59,14 +55,23 @@ void CBackstab::processCommand(CUserCmd *pUserCmd)
 	return;
 }
 
+void CBackstab::menuUpdate( F1_IConVar ** menuArray, int & currIndex )
+{
+	menuArray[ currIndex++ ] = autoBackstabSwitch;
+	if( autoBackstabSwitch->getValue() )
+	{
+		menuArray[ currIndex++ ] = enabled;
+	}
+}
+
 // backstab helper
-bool CBackstab::canBackstab(CEntity<CBaseCombatWeapon> &weap_entity, CEntity<> &local_entity)
+bool CBackstab::canBackstab( CBaseCombatWeapon *pBaseCombatWeapon, CBaseEntity *pBaseEntity )
 {
 	trace_t trace;
 
-	CEntity<CTFBaseWeaponMelee> tfweap(weap_entity.castTo<CTFBaseWeaponMelee>());
+	CTFBaseWeaponMelee *pBaseMeleeWeapon = CTFBaseWeaponMelee::FromBaseEntity(pBaseCombatWeapon);
 
-	bool istrace = tfweap->DoSwingTrace(trace);
+	bool istrace = pBaseMeleeWeapon->DoSwingTrace(trace);
 
 	if(!istrace)
 		return false;
@@ -77,58 +82,57 @@ bool CBackstab::canBackstab(CEntity<CBaseCombatWeapon> &weap_entity, CEntity<> &
 	if(trace.m_pEnt->IsDormant())
 		return false;
 
-	CEntity<> other_entity(trace.m_pEnt->GetIndex());
+	//CEntity<> other_entity(trace.m_pEnt->GetIndex());
 
-	if(other_entity.get<BYTE>(gEntVars.iLifeState) != LIFE_ALIVE)
+	if(trace.m_pEnt->IsAlive() == false)
 		return false;
 
-	classId Class = other_entity->GetClientClass()->iClassID;
+	classId Class = trace.m_pEnt->GetClientClass()->iClassID;
 
 	if(Class != classId::CTFPlayer)
 		return false;
 
-	int other_team = other_entity.get<int>(gEntVars.iTeam); // so we dont have to get the netvar every time
+	int other_team = trace.m_pEnt->GetTeam(); // so we dont have to get the netvar every time
 
 	if(other_team == gLocalPlayerVars.team || (other_team < 2 || other_team > 3)) // check team is not our team or invalid team
 		return false;
 
-	if(isBehind(other_entity, local_entity))
+	if(isBehind(trace.m_pEnt, pBaseEntity))
 	{
-		Log::Console("Can Backstab!");
+		//Log::Console("Can Backstab!");
 		return true;
 	}
 
 	return false;
 }
-// we cannot get the viewangles of another player so this function is defunct
-// maybe look into how the engine does it
-bool CBackstab::isBehind(CEntity<> &other_entity, CEntity<> &local_entity)
+
+bool CBackstab::isBehind( CBaseEntity *pBaseEntity, CBaseEntity *pLocalEntity )
 {
-	if(other_entity.isNull())
+	if( pBaseEntity == nullptr )
 		return false;
 
-	if(local_entity.isNull())
+	if( pLocalEntity == nullptr )
 		return false;
 
 	// Get the forward view vector of the target, ignore Z
 	Vector vecVictimForward;
-	AngleVectors(other_entity->GetPrevLocalAngles(), &vecVictimForward);
+	AngleVectors(pBaseEntity->GetPrevLocalAngles(), &vecVictimForward);
 	vecVictimForward.z = 0.0f;
 	vecVictimForward.NormalizeInPlace();
 
 	// Get a vector from my origin to my targets origin
 	Vector vecToTarget;
 	Vector localWorldSpace;
-	local_entity->GetWorldSpaceCenter(localWorldSpace);
+	pLocalEntity->GetWorldSpaceCenter(localWorldSpace);
 	Vector otherWorldSpace;
-	other_entity->GetWorldSpaceCenter(otherWorldSpace);
+	pBaseEntity->GetWorldSpaceCenter(otherWorldSpace);
 	vecToTarget = otherWorldSpace - localWorldSpace;
 	vecToTarget.z = 0.0f;
 	vecToTarget.NormalizeInPlace();
 
 	// Get a forward vector of the attacker.
 	Vector vecOwnerForward;
-	AngleVectors(local_entity->GetPrevLocalAngles(), &vecOwnerForward);
+	AngleVectors(pLocalEntity->GetPrevLocalAngles(), &vecOwnerForward);
 	vecOwnerForward.z = 0.0f;
 	vecOwnerForward.NormalizeInPlace();
 

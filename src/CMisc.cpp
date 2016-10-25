@@ -5,16 +5,19 @@
 
 #include "Util.h"
 
+CMisc gMisc;
+
 const char *CMisc::name() const
 {
 	return "MISC ACTIONS";
 }
 
-void CMisc::processCommand(CUserCmd *pUserCmd)
+void CMisc::processCommandBeforePred(CUserCmd *pUserCmd)
 {
-	CEntity<> local{me};
+	//CEntity<> local{me};
+	auto *pLocalEntity = GetBaseEntity(me);
 
-	if(local.isNull())
+	if(pLocalEntity == NULL)
 		return;
 
 	if( bunnyHop->getValue() == true )
@@ -32,7 +35,7 @@ void CMisc::processCommand(CUserCmd *pUserCmd)
 		if( pUserCmd->buttons & IN_JUMP )
 			if( !firstjump )
 				firstjump = fakejmp = 1;
-			else if( !( gLocalPlayerVars.flags & FL_ONGROUND ) )
+			else if( !( pLocalEntity->GetFlags() & FL_ONGROUND ) )
 				if( fakejmp )
 					fakejmp = 0;
 				else
@@ -43,47 +46,17 @@ void CMisc::processCommand(CUserCmd *pUserCmd)
 			firstjump = 0;
 	}
 
-	if( tauntSlide->getValue() == true )
+	if( pLocalEntity->GetFov() != fovChanger->getValue() )
 	{
-		if( local.get<int>( gEntVars.iPlayerCond ) & tf_cond::TFCond_Taunting )
-			local.set<int>( gEntVars.iPlayerCond, local.get<int>( gEntVars.iPlayerCond ) & ~tf_cond::TFCond_Taunting );
-
-		return;
-	}
-
-	//if(autoTaunt)
-	//{
-	//	// we do this here.... for reasons
-
-	//	static bool congaTime = false;
-
-	//	if(tf_roundstates::_from_integral(m_iRoundState) == +tf_roundstates::STATE_PREROUND)
-	//	{
-	//		congaTime = true;
-	//		if((gLocalPlayerVars.flags & tf_cond::TFCond_Taunting) == false)
-	//		{
-	//			gInts.Cvar->ConsoleColorPrintf({255,0,0,255}, "---> DO THE CONGA!!!\n");
-	//			gInts.Engine->ClientCmd_Unrestricted("taunt_by_name Taunt: Rock, Paper, Scissors");
-	//		}
-	//	}
-	//	else if(congaTime == true)
-	//	{
-	//		congaTime = false;
-	//		gInts.Engine->ClientCmd_Unrestricted("stop_taunt");
-	//	}
-	//}
-
-	if( local.get<int>( gEntVars.iFov ) != fovChanger->getValue() )
-	{
-		if( ( gLocalPlayerVars.cond & tf_cond::TFCond_Zoomed ) == false )
-			local.set<int>( gEntVars.iFov, fovChanger->getValue() );
+		if((gLocalPlayerVars.cond & tf_cond::TFCond_Zoomed) == false)
+			pLocalEntity->SetFov(fovChanger->getValue());
 	}
 
 	static ConVar *pNoPush = gInts.Cvar->FindVar( "tf_avoidteammates_pushaway" );
 
 	if( pNoPush != NULL )
 	{
-		pNoPush->SetValue( noPush->getValue() );
+		pNoPush->SetValue( !noPush->getValue() );
 	}
 
 	if( alwaysAttack2->getValue() )
@@ -94,29 +67,23 @@ void CMisc::processCommand(CUserCmd *pUserCmd)
 	return;
 }
 
-bool CMisc::processEntity( int index )
+void CMisc::processEntity( CBaseEntity *pBaseEntity )
 {
 
-	CEntity<> ent{ index };
+	//CEntity<> ent{ pBaseEntity };
 
-	if( ent.isNull() )
-		return false;
-
-	if( ent->IsDormant() )
-		return false;
-
-	if( ent->GetClientClass()->iClassID != classId::CTFPlayer )
-		return false;
+	if( pBaseEntity->GetClientClass()->iClassID != classId::CTFPlayer )
+		return;
 
 	if(removeDisguise->getValue() )
 	{
-		tf_cond curCond = ent.get<tf_cond>( gEntVars.iPlayerCond );
+		int curCond = pBaseEntity->GetCond();
 
 		if( curCond & tf_cond::TFCond_Disguised )
-			ent.set<int>( gEntVars.iPlayerCond, curCond & ~tf_cond::TFCond_Disguised );
+			pBaseEntity->SetCond( curCond & ~tf_cond::TFCond_Disguised );
 	}
 
-	return true;
+	return;
 }
 
 void CMisc::menuUpdate( F1_IConVar ** menuArray, int & currIndex )

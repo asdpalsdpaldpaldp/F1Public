@@ -6,6 +6,8 @@
 #include "Util.h"
 #include "Color.h"
 
+CGlow gGlow;
+
 // team 3: 0.490000 0.660000 0.770000 blue
 // team 2: 0.740000 0.230000 0.230000 red
 
@@ -13,27 +15,6 @@
 // one of the worst things i have ever done
 #define BLUCOLORFLOAT 0.49f, 0.66f, 0.77f
 #define REDCOLORFLOAT 0.74f, 0.23f, 0.23f
-
-Color healthToColor(int health, int maxHealth)
-{
-	int r = 0, g = 0, b = 0;
-
-	if(health > maxHealth)
-	{
-		b		= health - maxHealth;
-		health = maxHealth;
-	}
-
-	int percent = (health / maxHealth) * 100;
-
-	// TODO use hsl or hsv and then convert it to rgba
-
-	r = 0 + percent * (255 - 0);
-	g = 255 + percent * (0 - 255);
-	// double resultBlue = color1.blue + percent * (color2.blue - color1.blue);
-
-	return Color{r, g, b, 255};
-}
 
 int CGlowManager::registerGlowObject(CBaseEntity *ent, float r, float g, float b, float a, bool bRenderWhenOccluded, bool bRenderWhenUnoccluded, int nSplitScreenSlot)
 {
@@ -95,28 +76,35 @@ bool CGlow::paint()
 		return true;
 
 	
-	for(auto &glowObj : pGlowObjectManger->glowObjects)
+	for(int i = 0; i < pGlowObjectManger->glowObjects.Count(); i++)
 	{
+		auto &glowObj = pGlowObjectManger->glowObjects[ i ];
 		if(glowObj.hEntity.GetEntryIndex() != INVALID_EHANDLE_INDEX)
 		{
-			CEntity<> ent{glowObj.hEntity.GetEntryIndex()};
+			//CEntity<> ent{glowObj.hEntity.GetEntryIndex()};
 
-			if(ent.isNull())
+			CBaseEntity *pBaseEntity = glowObj.hEntity.Get();
+
+			if( pBaseEntity == nullptr)
 				continue;
 
-			if(ent->IsDormant())
+			if( pBaseEntity->IsDormant() || pBaseEntity->IsAlive() == false)
+			{
+				// unregister object
+				pGlowObjectManger->unregisterGlowObject( i );
 				continue;
+			}
 
-			int health = ent.get<int>(gEntVars.iHealth);
-			int maxHealth = getMaxHealth(ent);
+			int health = pBaseEntity->GetHealth();
+			int maxHealth = getMaxHealth( pBaseEntity->GetClass() );
 
 			DWORD dwColor = redGreenGradiant(health, maxHealth);
 
 			// alpha is always 255
 			glowObj.a = 1.0;
-			glowObj.r = RED(dwColor);
-			glowObj.g = GREEN(dwColor);
-			glowObj.b = BLUE(dwColor);
+			glowObj.r = float(RED(dwColor)) / 255.0f;
+			glowObj.g = float( GREEN(dwColor) ) / 255.0f;
+			glowObj.b = float( BLUE(dwColor) ) / 255.0f;
 
 			//Log::Console("team %d: %f %f %f", ent.get<int>(gEntVars.iTeam), glowObj.r, glowObj.g, glowObj.b);
 		}
@@ -126,45 +114,45 @@ bool CGlow::paint()
 	return true;
 }
 
-bool CGlow::processEntity(int index)
+void CGlow::processEntity( CBaseEntity *pBaseEntity )
 {
-	if(index == me) // we have no reason to perform glow on ourselves
-		return false;
-
-	// get the player
-	CEntity<> player(index);
-
 	// no nulls
-	if(player.isNull())
-	{
-		if(glowObjects[index])
-			glowObjects[index] = false;
-		return false;
-	}
+	//if( pBaseEntity == NULL )
+	//{
+	//	if( glowObjects[ pBaseEntity->GetIndex() ] )
+	//		glowObjects[ pBaseEntity->GetIndex() ] = false;
+	//	return;
+	//}
 
-	classId id = player->GetClientClass()->iClassID;
+	if( !enabled->getValue() )
+		return;
+
+	classId id = pBaseEntity->GetClientClass()->iClassID;
+
+	CBaseCombatCharacter *pBaseCharacter = ( CBaseCombatCharacter * ) pBaseEntity;
 
 	if(id == classId::CTFPlayer)
 	{
 		// no dormants or deads - included check for if glow is disabled here since we have to tell the engine to stop the glow rather than just ending the loop
-		if(player->IsDormant() || player.get<BYTE>(gEntVars.iLifeState) != LIFE_ALIVE || !enabled ||
-		   (useTeamColors->getValue() && gLocalPlayerVars.team == player.get<int>(gEntVars.iTeam)))
+		if( pBaseEntity->IsDormant() || pBaseEntity->IsAlive() == false || !enabled ||
+		   (useTeamColors->getValue() && gLocalPlayerVars.team == pBaseEntity->GetTeam()))
 		{
-			player.set<bool>(gEntVars.bGlowEnabled, false);
-			player.castToPointer<CBaseCombatCharacter>()->DestroyGlowEffect();
-			return false;
+			//pBaseCharacter->SetGlowEnabled( false );
+			//( ( CBaseCombatCharacter * ) pBaseEntity )->DestroyGlowEffect();
+			//pGlowObjectManger->unregisterGlowObject()
+			return;
 		}
 
 		// if glow is not enabled
-		if(player.get<bool>(gEntVars.bGlowEnabled))
-			return false;
+		if( pBaseCharacter->IsGlowEnabled() )
+			return;
 
 		// enable glow
-		player.set<bool>(gEntVars.bGlowEnabled, true);
+		pBaseCharacter->SetGlowEnabled( true );
 		// update the glow
-		player.castToPointer<CBaseCombatCharacter>()->UpdateGlowEffect();
+		pBaseCharacter->UpdateGlowEffect();
 
-		return true;
+		return;
 	}
 	// TODO replace with entity traits when that is done
 	//else if(id == classId::CObjectDispenser || id == classId::CObjectSentrygun || id == classId::CObjectTeleporter || id == classId::CBaseObject /*||
@@ -205,5 +193,16 @@ bool CGlow::processEntity(int index)
 	//		}
 	//	}
 	//}
-	return false;
+	return;
+}
+
+void CGlow::menuUpdate( F1_IConVar **menuArray, int &currIndex )
+{
+	menuArray[ currIndex++ ] = glowSwitch;
+	if(glowSwitch->getValue() )
+	{
+		menuArray[ currIndex++ ] = enabled;
+		menuArray[ currIndex++ ] = enemyOnly;
+		menuArray[ currIndex++ ] = useTeamColors;
+	}
 }

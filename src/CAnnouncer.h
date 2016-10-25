@@ -6,7 +6,7 @@
 
 // this is gir's stuff mixed with the magic of IHack
 
-class CAnnouncer : public IHack, public IGameEventListener2
+class CAnnouncer : public IHack<CAnnouncer>, public IGameEventListener2
 {
 public:
 	CAnnouncer()
@@ -19,14 +19,14 @@ public:
 	void FireGameEvent(IGameEvent *pEvent) override;
 
 	// IHack inherits
-	void init() override;
+	void init();
 
-	const char *name() const override
+	const char *name() const
 	{
 		return "ANNOUNCER";
 	}
 
-	void processCommand(CUserCmd *pUserCmd) override;
+	void processCommand(CUserCmd *pUserCmd);
 
 private:
 	void PlaySound(const char *soundFile);
@@ -38,3 +38,5 @@ protected:
 	int killStreakCounter;
 	float killStreakTimeout;
 };
+
+extern CAnnouncer gAnnouncer;

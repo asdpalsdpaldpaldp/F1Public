@@ -4,6 +4,10 @@
 
 #include "F1_Menu.h"
 
+#include "modules.h"
+
+DEFINE_RECURSE_CALL_FUNCTION_2_ARG( _menuUpdate, F1_IConVar **, int & );
+
 void F1_MenuListing::render()
 {
 	F1_Point mouseXY;
@@ -28,7 +32,7 @@ void F1_MenuListing::render()
 		dwTeamColor = gDrawManager.dwGetTeamColor( CEntity<>{me}.get<int>( gEntVars.iTeam ) );
 	}
 
-	// use of dynamiF1_cast here allows us to up cast from the base class to the parent class
+	// use of dynamic_cast here allows us to up cast from the base class to the parent class
 	// without worrying about what type it is
 	// (if pVar is not a F1_ConVar<Switch> * internally then the dynamic cast will return nullptr)
 	if( auto *pSwitchConvar = dynamic_cast< F1_ConVar<Switch> * >( pVar ) )
@@ -131,9 +135,6 @@ void F1_Menu::render()
 {
 	if( menuEnabled )
 	{
-		// call the base render
-		BaseClass::render();
-
 		//CUtil::setMouseState(0);
 		CUtil::setCursorVisible( true );
 
@@ -158,15 +159,7 @@ void F1_Menu::render()
 		// remove current listing children and destroy them
 		destroyChildren();
 
-		auto pHackArray = gHack.getHackArray();
-
-		int i = 0;
-		auto *pHack = pHackArray[ i++ ];
-		while( pHack != NULL )
-		{
-			pHack->menuUpdate( menuArray, currIndex );
-			pHack = pHackArray[ i++ ];
-		}
+		RecurseCall_menuUpdate( menuArray, currIndex, ACTIVE_HACKS );
 
 		int iMenuItems = currIndex;
 
@@ -185,47 +178,17 @@ void F1_Menu::render()
 			{
 				if( i != menuIndex )
 				{
-					// use of dynamiF1_cast here allows us to up cast from the base class to the parent class
-					// without worrying about what type it is
-					// (if pVar is not a F1_ConVar<Switch> * internally then the dynamic cast will return nullptr)
-					//if(auto *pSwitchConvar = dynamiF1_cast<F1_ConVar<Switch> *>(pVar))
-					//{
-					//	if(pSwitchConvar->getValue())
-					//		gDrawManager.DrawString(x + 2, y + (h * i), dwTeamColor, false, " [-] %s", pSwitchConvar->name());
-					//	else
-					//		gDrawManager.DrawString(x + 2, y + (h * i), dwTeamColor, false, " [+] %s", pSwitchConvar->name());
-
-					//}
-					//else
-					//{
-					//	gDrawManager.DrawString(x + 2, y + (h * i), dwMenuOff, false, "%s", pVar->name());
-					//	gDrawManager.DrawString(xx, y + (h * i), dwMenuOff, false, "%s", pVar->print());
-					//}
-
 					addChild( new F1_MenuListing( x, y + ( h * i ), w, h, pVar, xx, dwMenuOff ) );
 				}
 				else
 				{
-					//gDrawManager.DrawRect(x + 1, y + (h * i), w - 2, h, COLORCODE(255, 255, 255, 80));
-
-					//if(auto *pSwitchConvar = dynamiF1_cast<F1_ConVar<Switch> *>(pVar))
-					//{
-					//	if(pSwitchConvar->getValue())
-					//		gDrawManager.DrawString(x + 2, y + (h * i), dwTeamColor, false, " [-] %s", pSwitchConvar->name());
-					//	else
-					//		gDrawManager.DrawString(x + 2, y + (h * i), dwTeamColor, false, " [+] %s", pSwitchConvar->name());
-
-					//}
-					//else
-					//{
-					//	gDrawManager.DrawString(x + 2, y + (h * i), dwTeamColor, false, "%s", pVar->name());
-					//	gDrawManager.DrawString(xx, y + (h * i), dwTeamColor, false, "%s", pVar->print());
-					//}
-
 					addChild( new F1_MenuListing( x, y + ( h * i ), w, h, pVar, xx, dwTeamColor ) );
 				}
 			}
 		}
+
+		// call the base render
+		BaseClass::render();
 	}
 	else
 	{
@@ -251,7 +214,8 @@ int F1_Menu::keyboardInput( ButtonCode_t button )
 		menuEnabled = !menuEnabled;
 	}
 	// do not use else here, if we press insert, we want the menu to appear
-	if( menuEnabled )
+	// deprecated in favour of mouse 
+	if( menuEnabled && false)
 	{
 		switch( button )
 		{

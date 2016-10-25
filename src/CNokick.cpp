@@ -5,6 +5,8 @@
 
 #include <ctime>
 
+CNokick gNokick;
+
 // bewarned, this is all FUCKING USELESS NOW. YAY
 
 typedef void(__thiscall *EmitSoundFn)(PVOID pSound, IRecipientFilter &filter, int iEntIndex, int iChannel, const char *pSample, float flVolume,

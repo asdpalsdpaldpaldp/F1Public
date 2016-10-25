@@ -163,7 +163,7 @@ void Log::Console(const char *fmt, ...)
 	va_start(vlist, fmt);
 	_vsnprintf(buf, sizeof(buf), fmt, vlist);
 	va_end(vlist);
-	sprintf(outbuf, "{CONSOLE} %s\n", buf);
+	sprintf_s(outbuf, "{CONSOLE} %s\n", buf);
 
 	fpMsg(outbuf);
 }

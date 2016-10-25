@@ -9,6 +9,7 @@ public:
 	HMODULE GetModuleHandleSafe(const char *pszModuleName);
 	DWORD GetClientSignature(char *chPattern);
 	DWORD GetEngineSignature(char *chPattern);
+	DWORD GetServerSignature( char *chPattern );
 };
 
 extern CSignature gSignatures;

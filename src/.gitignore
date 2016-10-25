@@ -233,3 +233,9 @@ _Pvt_Extensions
 *.VC.*
 F12016.VC.db
 F12016.VC.db
+
+*.i
+
+# emacs
+*.*~
+\#*\#

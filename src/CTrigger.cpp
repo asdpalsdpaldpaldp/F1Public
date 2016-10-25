@@ -5,6 +5,8 @@
 #include "CDrawManager.h"
 #include "bspflags.h"
 
+CTrigger gTrigger;
+
 const char *CTrigger::name() const { return "TRIGGERBOT"; }
 
 bool CTrigger::paint()

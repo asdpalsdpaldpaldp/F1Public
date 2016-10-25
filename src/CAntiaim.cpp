@@ -3,6 +3,8 @@
 
 #include "SDK.h"
 
+CAntiaim gAntiaim;
+
 const char *CAntiaim::name() const
 {
 	return "ANTI-AIM";

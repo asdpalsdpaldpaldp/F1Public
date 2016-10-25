@@ -41,7 +41,7 @@ public:
 	void unregisterGlowObject(int glowIndex);
 };
 
-class CGlow : public IHack
+class CGlow : public IHack<CGlow>
 {
 	// the pointer to our glow object manager
 	CGlowManager *pGlowObjectManger;
@@ -73,8 +73,11 @@ public:
 		useTeamColors = new F1_ConVar<bool>( " - Use Team Colors", false );
 	}
 
-	const char *name() const override;
-	void init() override;
-	bool paint() override;
-	bool processEntity(int index) override;
+	const char *name() const;
+	void init();
+	bool paint();
+	void processEntity( CBaseEntity *pBaseEntity );
+	void menuUpdate(F1_IConVar **menuArray, int &currIndex);
 };
+
+extern CGlow gGlow;

@@ -3,7 +3,8 @@
 // base, common and standalone headers are defined here
 
 // auto define lean and mean
-#include "windows.h"
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 #include <math.h>
 #include <xstring>
 #include <vector>
@@ -19,6 +20,8 @@
 // use SSE2 for fast sqrt's
 __forceinline float fsqrtf( float x )
 {
+	// we should be able to get NRVO here
+	// it should be inlined anyway
 	float root = 0.0f;
 	__asm
 	{
@@ -128,6 +131,7 @@ inline void quickCrash()
 }
 //===================================================================================================
 #define me gInts.Engine->GetLocalPlayer()
+#define GetBaseEntity(x) gInts.EntList->GetClientEntity(x)
 #define MASK_AIMBOT 0x200400B
 #define CONTENTS_HITBOX 0x40000000
 #define CASUAL_HACKER_MASK 0x4600400B

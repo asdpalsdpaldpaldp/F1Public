@@ -97,7 +97,7 @@ public:
 	virtual void aim(CUserCmd *pUserCmd, Vector v, bool silentMoveFix)
 	{
 		Vector angles;
-		VectorAngles(v - (gLocalPlayerVars.pred.origin + CEntity<>{me}.get<Vector>(gEntVars.vecViewOffset)), angles);
+		VectorAngles(v - (GetBaseEntity(me)->GetAbsOrigin() + gLocalPlayerVars.viewOffset), angles);
 		ClampAngle(angles);
 		if(silentMoveFix)
 			silentMovementFix(pUserCmd, angles);

@@ -4,9 +4,8 @@
 
 
 // TODO maybe recode using CHandle and EHANDLE
-
 template <typename T = CBaseEntity> // default entity is CBaseEntity
-class CEntity
+class __declspec( deprecated( "WARNING: CEntity<> is deprecated in favor of CBaseEntity *" ) ) CEntity
 {
 	int ent;
 

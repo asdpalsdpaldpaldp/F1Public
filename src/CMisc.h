@@ -3,7 +3,7 @@
 #include "IHack.h"
 #include "CEntity.h"
 
-class CMisc : public IHack
+class CMisc : public IHack<CMisc>
 {
 	//bool bunnyhop;
 	//bool tauntsilde;
@@ -34,10 +34,12 @@ public:
 		noPush = new F1_ConVar<bool>( " - No push", false );
 	}
 
-	const char *name() const override;
-	void processCommand(CUserCmd *pUserCmd) override;
+	const char *name() const;
+	void processCommandBeforePred(CUserCmd *pUserCmd);
 
-	bool processEntity( int index ) override;
+	void processEntity( CBaseEntity *pBaseEntity );
 
-	void menuUpdate( F1_IConVar **menuArray, int &currIndex ) override;
+	void menuUpdate( F1_IConVar **menuArray, int &currIndex );
 };
+
+extern CMisc gMisc;

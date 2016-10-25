@@ -502,3 +502,19 @@ inline float AngleDiff(float destAngle, float srcAngle)
 	}
 	return delta;
 }
+
+inline void VectorLerp( const Vector& src1, const Vector& src2, float t, Vector& dest )
+{
+	CHECK_VALID( src1 );
+	CHECK_VALID( src2 );
+	dest.x = src1.x + ( src2.x - src1.x ) * t;
+	dest.y = src1.y + ( src2.y - src1.y ) * t;
+	dest.z = src1.z + ( src2.z - src1.z ) * t;
+}
+
+inline Vector VectorLerp( const Vector& src1, const Vector& src2, float t )
+{
+	Vector result;
+	VectorLerp( src1, src2, t, result );
+	return result;
+}

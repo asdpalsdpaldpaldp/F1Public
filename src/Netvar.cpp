@@ -2,11 +2,13 @@
 
 #include "SDK.h"
 
+/*
+
 /**
 * netvar_tree - Constructor
 *
 * Call populate_nodes on every RecvTable under client->GetAllClasses()
-*/
+*//*
 void netvar_tree::init()
 {
 	const auto *client_class = gInts.Client->GetAllClasses();
@@ -28,7 +30,7 @@ void netvar_tree::init()
 *
 * Add info for every prop in the recv table to the node map. If a prop is a
 * datatable itself, initiate a recursive call to create more branches.
-*/
+*//*
 void netvar_tree::populate_nodes(RecvTable *recv_table, map_type *map)
 {
 	for(auto i = 0; i < recv_table->GetNumProps(); i++)
@@ -44,3 +46,5 @@ void netvar_tree::populate_nodes(RecvTable *recv_table, map_type *map)
 }
 
 netvar_tree gNetvars;
+
+*/

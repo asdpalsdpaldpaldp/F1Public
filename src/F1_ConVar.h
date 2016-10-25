@@ -22,19 +22,20 @@ public:
 // base convar impl's some basic functionality
 class F1_BaseConVar : public F1_IConVar
 {
-	char *Name;
+	char Name[64];
 
 public:
 
 	F1_BaseConVar( const char *n )
 	{
-		Name = new char[ 32 ];
-		strcpy_s( Name, 32, n );
+		//Name = new char[ 64 ];
+		//memset(Name, 0, 64);
+		strcpy_s( Name, n );
 	};
 
 	~F1_BaseConVar()
 	{
-		delete[ ] Name;
+		//delete[ ] Name;
 	}
 
 	virtual const char *name() override
@@ -85,14 +86,14 @@ public:
 		value = newVal;
 	}
 
+    // use this straight away
 	const char *print() override
 	{
-		// TODO PLEASE DEALLOCATE THIS MEMORY
-		char *pString = new char[ 25 ];
+		static char pString[31];
 
-		memset( ( void * ) pString, 0, 25 );
+		memset((void *)pString, 0, 31);
 
-		strcpy_s( pString, 25, std::to_string( value ).c_str() );
+		strcpy_s(pString, 25, std::to_string(value).c_str());
 
 		return pString;
 	}
@@ -134,41 +135,13 @@ public:
 
 struct Switch
 {
-	bool val;
-
-	operator bool()
-	{
-		return val;
-	}
 };
 
 template<>
-class F1_ConVar<Switch> : public F1_BaseConVar
+class F1_ConVar<Switch> : public F1_ConVar<bool>
 {
-	bool value;
 public:
-
-	F1_ConVar( const char *name, bool val ) : F1_BaseConVar( name ), value( val ) {};
-
-	const char *print() override
-	{
-		return value ? "True" : "False";
-	}
-
-	void increment() override
-	{
-		value = true;
-	}
-
-	void decrement() override
-	{
-		value = false;
-	}
-
-	bool getValue()
-	{
-		return value;
-	}
+	F1_ConVar(const char *name, bool val) : F1_ConVar<bool>(name, val) {};
 };
 
 template<typename T>

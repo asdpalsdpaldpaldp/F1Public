@@ -38,6 +38,7 @@ public:
 	DWORD flLastFireTime;
 	DWORD flChargeBeginTime;
 	DWORD flAnimTime;
+	DWORD flSimulationTime;
 
 	DWORD hActiveWeapon;
 	DWORD hOwner;

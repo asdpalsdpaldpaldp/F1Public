@@ -14,21 +14,6 @@
 
 #include "Log.h"
 
-class moduleException : public std::exception
-{
-public:
-	explicit moduleException(const char *message) : msg_(message) {}
-
-	explicit moduleException(const std::string &message) : msg_(message) {}
-
-	virtual ~moduleException() throw() {}
-
-	virtual const char *what() const throw() { return msg_.c_str(); }
-
-protected:
-	std::string msg_;
-};
-
 // after we convert an seh exception to a c++ exception
 class sehException : std::exception
 {
@@ -56,10 +41,6 @@ LONG WINAPI unhandledSehExceptionHandler(EXCEPTION_POINTERS *e);
 #define _TRY try
 #undef _CATCH // undefine this _CATCH
 #define _CATCH catch(...)
-#define _CATCHMODULE catch(moduleException e)
-#define _REPORT_ERROR(Class, funcName)                                                                                            \
-	moduleException e(std::string("Other error from ") + "\n" + Class->name() + "\n" + typeid(*Class).name() + "::" + #funcName); \
-	throw e
 #define _CATCH_SEH catch(sehException e)
 #define _CATCH_SEH_REPORT_ERROR(Class, funcName) \
 	_CATCH_SEH { Log::Error("An SEH exception\n(name: %s | id=0x%X)\nwas raised from %s::%s", "UNKNOWN", e.errCode, typeid(*Class).name(), #funcName); }
@@ -70,11 +51,18 @@ LONG WINAPI unhandledSehExceptionHandler(EXCEPTION_POINTERS *e);
 #define _TRY
 #define _CLOSE
 #define _CATCH
-#define _REPORT_ERROR(className, method)
-#define _CATCHMODULE
-#define _REPORT_ERROR
 #define _CATCH_SEH
 #define _CATCH_SEH_REPORT_ERROR(Class, funcName)
 #define _INSTALL_SEH_TRANSLATOR()
 
 #endif
+
+// begin runtime one-time asserts
+
+#define __RASSERT(x, msg) \
+		static bool oneTime = false; \
+		if(!x && oneTime == false) { oneTime = true; Log::Error("line: %d function: %s file: %s \n error: %s", __LINE__, __FUNCSIG__, __FILE__, " ## msg ## ") }
+
+#define RASSERT(x, msg) do { __RASSERT(x, msg) } while(0)
+
+#define RASSERTA(x, msg, action) do { __RASSERT(x, msg) else { action } } while(0)

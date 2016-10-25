@@ -7,13 +7,14 @@
 #include "CDumper.h"
 #endif
 
-class CNet;
+// prepare to die
+#define ACTIVE_HACKS \
+	gAimbot, gAnnouncer, gAntiaim, *CAntiSmac::getInst(), \
+	gAutoAirblast, /*gBackstab,*/ gEsp, /*gGlow,*/ gNokick, gPlayerManager, \
+	gPureBypass, gRadar, gTrigger, gMisc, gHack
 
-class CHack : public IHack
+class CHack : public IHack<CHack>
 {
-	// increase if nesercary (it wont be)
-	IHack *pHackArray[ 250 ];
-
 	int createMoveEBP;
 
 	// use of vector here allows for easy adding and removing of windows
@@ -59,9 +60,9 @@ public:
 
 	static LRESULT __stdcall CHack::Hooked_WndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam );
 
-	inline IHack **getHackArray() { return pHackArray; };
+	//inline IHack **getHackArray() { return pHackArray; };
 
-	void menuUpdate( F1_IConVar **menuArray, int &currIndex ) override;
+	void menuUpdate( F1_IConVar **menuArray, int &currIndex );
 
 	pSilentData_t silentData;
 };

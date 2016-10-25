@@ -119,6 +119,12 @@
     <ClCompile Include="CPlayerManager.cpp">
       <Filter>Hack\modules\CPlayerManager</Filter>
     </ClCompile>
+    <ClCompile Include="CTargetHelper.cpp">
+      <Filter>Hack\other\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="DynamicNetvars.cpp">
+      <Filter>SDK\F1</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CHack.h">
@@ -357,6 +363,15 @@
     </ClInclude>
     <ClInclude Include="F1_ConVar.h">
       <Filter>SDK\F1</Filter>
+    </ClInclude>
+    <ClInclude Include="playerLagCompensation.h">
+      <Filter>SDK\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="DynamicNetvars.h">
+      <Filter>SDK\F1</Filter>
+    </ClInclude>
+    <ClInclude Include="modules.h">
+      <Filter>Hack\modules</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

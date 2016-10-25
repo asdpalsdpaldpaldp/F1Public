@@ -1,100 +1,94 @@
 #include "SDK.h"
 
-#include "Util.h"
 #include "F1_Cache.h"
+#include "Util.h"
+
+#include "modules.h"
+
+DEFINE_RECURSE_CALL_FUNCTION_1_ARG(_processCommandBeforePred, CUserCmd *);
+DEFINE_RECURSE_CALL_FUNCTION_1_ARG(_processCommand, CUserCmd *);
 
 //============================================================================================
 bool __fastcall CHack::Hooked_CreateMove(PVOID ClientMode, int edx, float input_sample_frametime, CUserCmd *pCommand)
 {
-
-	void *createMoveEBP;
-
-	__asm
-	{
-		mov createMoveEBP, ebp;
-	}
-
-	auto bSendPacket = (bool *)(****(BYTE*****)createMoveEBP) - 0x1;
-
-	//bool bSendPacket = NULL;
-
 	_TRY
 	{
 		_INSTALL_SEH_TRANSLATOR();
 
-		auto &hook = VMTManager::GetHook( ClientMode );
-		bool bReturn = hook.GetMethod<bool( __thiscall * )( PVOID, float, CUserCmd * )>( gOffsets.createMoveOffset )( ClientMode, input_sample_frametime, pCommand );
+		auto &hook   = VMTManager::GetHook(ClientMode);
+		bool bReturn = hook.GetMethod<bool(__thiscall *)(PVOID, float, CUserCmd *)>(gOffsets.createMoveOffset)(ClientMode, input_sample_frametime, pCommand);
 
-		CEntity<> local{ me };
-		CBaseEntity *localEnt = local.castToPointer<CBaseEntity>();
+		CBaseEntity *pBaseLocalEntity = GetBaseEntity(me);
 
 		// this should NEVER happen
-		if( local.isNull() )
+		if(pBaseLocalEntity == NULL)
 			throw;
 
 		// update our stats every game tick
-		gLocalPlayerVars.Class = local.get<tf_classes>( gEntVars.iClass );
-		gLocalPlayerVars.cond = local.get<int>( gEntVars.iPlayerCond );
-		gLocalPlayerVars.condEx = local.get<int>( gEntVars.iPlayerCondEx );
-		gLocalPlayerVars.health = local.get<int>( gEntVars.iHealth );
-		gLocalPlayerVars.team = local.get<int>( gEntVars.iTeam );
-		gLocalPlayerVars.flags = local.get<int>( gEntVars.iFlags );
-		gLocalPlayerVars.cmdNum = pCommand->command_number;
-		gLocalPlayerVars.info = gInts.Engine->GetPlayerInfo( me );
+		gLocalPlayerVars.Class = pBaseLocalEntity->GetClass();
+		gLocalPlayerVars.cond  = pBaseLocalEntity->GetCond();
+		//gLocalPlayerVars.condEx = local.get<int>( gEntVars.iPlayerCondEx );
+		gLocalPlayerVars.health  = pBaseLocalEntity->GetHealth();
+		gLocalPlayerVars.team	= pBaseLocalEntity->GetTeam();
+		gLocalPlayerVars.flags   = pBaseLocalEntity->GetFlags();
+		gLocalPlayerVars.cmdNum  = pCommand->command_number;
+		gLocalPlayerVars.info	= gInts.Engine->GetPlayerInfo(me);
+		gLocalPlayerVars.thisCmd = pCommand;
 
-		CBaseEntity *pLocalWep = gInts.EntList->GetClientEntity( HANDLE2INDEX( local.get<int>( gEntVars.hActiveWeapon ) ) );
+		CBaseEntity *pLocalWep = pBaseLocalEntity->GetActiveWeapon();
 
 		// get the current weapon tag for our active weapon
-		gLocalPlayerVars.wepTag = CEntTag( pLocalWep );
+		gLocalPlayerVars.wepTag = CEntTag(pLocalWep);
 
-		if( pLocalWep )
+		if(pLocalWep)
 		{
 			gLocalPlayerVars.activeWeapon = pLocalWep->GetClientClass()->iClassID;
 
-			gLocalPlayerVars.flNextAttack = CEntity<>{ pLocalWep->GetIndex() }.get<float>( gEntVars.flNextPrimaryAttack );
+			gLocalPlayerVars.flNextAttack = pLocalWep->GetNextAttack();
 		}
 		else
-			gLocalPlayerVars.activeWeapon = static_cast< classId >( -1 );
+			gLocalPlayerVars.activeWeapon = static_cast<classId>(-1);
 
+		// call this before ANY prediction takes place
+		RecurseCall_processCommandBeforePred(pCommand, ACTIVE_HACKS);
+
+		// get valid targets for this tick
+		gTargetHelper.think();
 
 		// begin local client cmd prediction
-		gLocalPlayerVars.pred.oldOrigin = localEnt->GetAbsOrigin();
 
 		CMoveData moveData;
 
-		memset( &moveData, 0, sizeof( CMoveData ) );
+		memset(&moveData, 0, sizeof(CMoveData));
 
 		// back up the globals
-		float oldCurTime = gInts.Globals->curtime;
+		float oldCurTime   = gInts.Globals->curtime;
 		float oldFrameTime = gInts.Globals->frametime;
 
 		// set up the globals
-		gInts.Globals->curtime = local.get<float>( gEntVars.nTickBase ) * gInts.Globals->interval_per_tick;
+		gInts.Globals->curtime   = pBaseLocalEntity->GetTickBase() * gInts.Globals->interval_per_tick;
 		gInts.Globals->frametime = gInts.Globals->interval_per_tick;
 
-		CBaseEntity *pLocal = local.castToPointer<CBaseEntity>();
-
 		// set the current cmd
-		local.set<CUserCmd *>( 0x107C, pCommand );
+		pBaseLocalEntity->set<CUserCmd *>(0x107C, pCommand);
 
-		gInts.GameMovement->StartTrackPredictionErrors( pLocal );
+		gInts.GameMovement->StartTrackPredictionErrors(pBaseLocalEntity);
 
 		// do actual player cmd prediction
-		gInts.Prediction->SetupMove( pLocal, pCommand, gInts.MoveHelper, &moveData );
-		gInts.GameMovement->ProcessMovement( pLocal, &moveData );
-		gInts.Prediction->RunCommand( pLocal, pCommand, gInts.MoveHelper );
-		gInts.Prediction->FinishMove( pLocal, pCommand, &moveData );
+		gInts.Prediction->SetupMove(pBaseLocalEntity, pCommand, gInts.MoveHelper, &moveData);
+		gInts.GameMovement->ProcessMovement(pBaseLocalEntity, &moveData);
+		//gInts.Prediction->RunCommand( pLocal, pCommand, gInts.MoveHelper );
+		gInts.Prediction->FinishMove(pBaseLocalEntity, pCommand, &moveData);
 
-		gInts.GameMovement->FinishTrackPredictionErrors( pLocal );
+		gInts.GameMovement->FinishTrackPredictionErrors(pBaseLocalEntity);
 
 		// reset the current cmd
-		local.set<CUserCmd *>( 0x107C, 0 );
+		pBaseLocalEntity->set<CUserCmd *>(0x107C, 0);
 
 		// restore the globals
-		gInts.Globals->curtime = oldCurTime;
+		gInts.Globals->curtime   = oldCurTime;
 		gInts.Globals->frametime = oldFrameTime;
 
-		gLocalPlayerVars.pred.origin = local->GetAbsOrigin();
 		// end local entity prediction
 
 		// set these before the hacks run
@@ -102,7 +96,7 @@ bool __fastcall CHack::Hooked_CreateMove(PVOID ClientMode, int edx, float input_
 
 		gHack.silentData.fMove = pCommand->forwardmove;
 		gHack.silentData.sMove = pCommand->sidemove;
-		gHack.silentData.view = pCommand->viewangles;
+		gHack.silentData.view  = pCommand->viewangles;
 
 		//static bool oneTime = false;
 		//if(!oneTime )
@@ -112,28 +106,26 @@ bool __fastcall CHack::Hooked_CreateMove(PVOID ClientMode, int edx, float input_
 		//	oneTime = true;
 		//}
 
-		int i = 0;
-		auto *pHack = gHack.pHackArray[ i++ ];
-		while( pHack != NULL )
-		{
-			_TRY
-			{
-				pHack->processCommand( pCommand );
-			}
-			_CATCH_SEH_REPORT_ERROR( pHack, move() )
-			pHack = gHack.pHackArray[ i++ ];
-		}
+		//int i = 0;
+		//auto *pHack = gHack.pHackArray[ i++ ];
+		//while( pHack != NULL )
+		//{
+		//	_TRY
+		//	{
+		//		pHack->processCommand( pCommand );
+		//	}
+		//	_CATCH_SEH_REPORT_ERROR( pHack, move() )
+		//	pHack = gHack.pHackArray[ i++ ];
+		//}
+
+		RecurseCall_processCommand(pCommand, ACTIVE_HACKS);
 
 		//bool *bSendPacket = ( bool * ) ( *( char ** ) ( gHack.createMoveEBP - 0x1 ) );
 
-		NET_SetConVar setName( "name", gLocalPlayerVars.name.c_str() );
-		gInts.Engine->GetNetChannelInfo()->SendNetMsg( *(INetMessage *)&setName );
+		NET_SetConVar setName("name", gLocalPlayerVars.name.c_str());
+		gInts.Engine->GetNetChannelInfo()->SendNetMsg(*(INetMessage *)&setName);
 	}
-	_CATCHMODULE
-	{
-		Log::Error( "%s", e.what() );
-	}
-	_CATCH_SEH_REPORT_ERROR( &gHack, createMove() )
+	_CATCH_SEH_REPORT_ERROR(&gHack, createMove())
 
 	return false;
 }
@@ -145,22 +137,25 @@ void __fastcall CHack::Hooked_CHLCreateMove(PVOID CHLClient, int edx, int sequen
 
 	CUserCmd *pCommand = gInts.Input->GetUserCmd(sequence_number);
 
-	if(!pCommand )
+	if(!pCommand)
 		return;
 
-	
+	CBaseEntity *pLocalEntity = GetBaseEntity(me);
+	if(pLocalEntity == nullptr)
+		return;
 
 	// SPEEDHACK (only works on hvh servers)
 	// creds gir
 	// TODO move this into its own hack
 	static int iSpeedCounter = 0; //Setup a global counter.
-								  //If I'm pressing MOUSE4 and the counter was not 0.
-	if( iSpeedCounter > 0 && ( GetAsyncKeyState( VK_LSHIFT ) || gHack.speedHackConstant->getValue() == true) )
+	static float step		 = 0;
+	//If I'm pressing MOUSE4 and the counter was not 0.
+	if(iSpeedCounter > 0 && (GetAsyncKeyState(VK_LSHIFT) || gHack.speedHackConstant->getValue() == true))
 	{
 		iSpeedCounter--; //Decrement the counter.
+		//pLocalEntity->SetSimulationTime(pLocalEntity->GetSimulationTime() + step);
 		//pCommand->tick_count--; //Normalize tick_count.
-		_asm
-		{
+		__asm {
 			push eax; //Preserve EAX to the stack.
 			mov eax, dword ptr ss : [ebp]; //Move EBP in to EAX.
 			mov eax, [ eax ]; //Derefrence the base pointer.
@@ -171,7 +166,14 @@ void __fastcall CHack::Hooked_CHLCreateMove(PVOID CHLClient, int edx, int sequen
 	}
 	else
 	{
-		iSpeedCounter = gHack.speedHackSpeed->getValue(); //We want to run this 7 times.
+		auto counter  = gHack.speedHackSpeed->getValue();
+		iSpeedCounter = counter; //We want to run this 7 times.
+
+		// do m_flSimulationTime mod here
+
+		step = 1.0f / counter;
+
+
 	}
 
 	int cmEBP = 0;
@@ -181,11 +183,11 @@ void __fastcall CHack::Hooked_CHLCreateMove(PVOID CHLClient, int edx, int sequen
 
 	gHack.createMoveEBP = cmEBP;
 
-	bool *bSendPacket = ( bool * ) ( *( char ** ) cmEBP - 0x1 );
-
+	bool *bSendPacket = (bool *)(*(char **)cmEBP - 0x1);
 
 	// TODO blow the bone cache first
 
+	// TODO do we really need to do this?
 	// manually interpolate each entity
 	for( int i = 0; i < gInts.EntList->GetHighestEntityIndex(); i++ )
 	{
@@ -196,22 +198,24 @@ void __fastcall CHack::Hooked_CHLCreateMove(PVOID CHLClient, int edx, int sequen
 				pBaseEntity->Interpolate( gInts.Globals->curtime );
 	}
 
+	pCommand->tick_count += gHack.tickCountConstant->getValue();
+
 	// reset the cache
 	gCache.blow();
 
 	VMTManager &hook = VMTManager::GetHook(CHLClient); // Get a pointer to the instance of your VMTManager with the function GetHook.
 	hook.GetMethod<void(__thiscall *)(PVOID, int, float, bool)>(gOffsets.createMoveOffset)(CHLClient, sequence_number, input_sample_time,
-		active); // Call the original.
+																						   active); // Call the original.
 
-	pCommand->command_number = 3599;
+	// TODO reactivate
+	//pCommand->command_number = 3599;
+	//pCommand->random_seed = CRandom::MD5_PseudoRandom( 3599 ) & 0x7fffffff;
 
-	pCommand->random_seed = CRandom::MD5_PseudoRandom( 3599 ) & 0x7fffffff;
-
-	if( bCanShoot( CEntity<>{ me }, pCommand ) && ( CEntity<>{me}.get<BYTE>(gEntVars.iLifeState) == LIFE_ALIVE) )
+	if(bCanShoot(pLocalEntity, pCommand) && pLocalEntity)
 	{
 		*bSendPacket = false;
 	}
-	else if( !( pCommand->buttons & IN_ATTACK ) )
+	else if(!(pCommand->buttons & IN_ATTACK))
 	{
 		// only reset the angles if we are not attacking
 		*bSendPacket = true;
@@ -231,13 +235,13 @@ void __fastcall CHack::Hooked_CHLCreateMove(PVOID CHLClient, int edx, int sequen
 		*bSendPacket = true;
 	}
 
-	if( gHack.fakeLag->getValue() == true )
+	if(gHack.fakeLag->getValue() == true)
 	{
 		static int currLagIndex = 0;
 
 		int maxLagIndex = gHack.fakeLagAmount->getValue();
 
-		if( currLagIndex < maxLagIndex )
+		if(currLagIndex < maxLagIndex)
 		{
 			*bSendPacket = false;
 			currLagIndex++;
@@ -253,22 +257,25 @@ void __fastcall CHack::Hooked_CHLCreateMove(PVOID CHLClient, int edx, int sequen
 		*bSendPacket = true;
 	}
 
-	if( gHack.fakeCrouch->getValue() == 1 )
+	if(gHack.fakeCrouch->getValue() == 1)
 	{
-		if( ( gInts.Globals->tickcount % 2 ) == 1 && pCommand->buttons & IN_DUCK )
-		{
-			*bSendPacket = false;
-
-			pCommand->buttons &= ~IN_DUCK;
-		}
+		//pCommand->viewangles.y -= 180;
+		pCommand->viewangles.z = 90;
+	}
+	else if(gHack.fakeCrouch->getValue() == 2)
+	{
+		//pCommand->viewangles.y += 180;
+		pCommand->viewangles.z = 90;
+	}
+	else
+	{
+		pCommand->viewangles.z = 0;
 	}
 
-	pCommand->tick_count += gHack.tickCountConstant->getValue();
-
 	// resign the cmd
-	CVerifiedUserCmd *pSafeCommand = ( CVerifiedUserCmd * ) ( *( DWORD * ) ( gInts.Input.get() + 0xF8 ) + ( sizeof( CVerifiedUserCmd ) * ( sequence_number % 90 ) ) );
-	pSafeCommand->m_cmd			  = *pCommand;
-	pSafeCommand->m_crc			  = GetChecksumForCmd(pSafeCommand->m_cmd);
+	CVerifiedUserCmd *pSafeCommand = (CVerifiedUserCmd *)(*(DWORD *)(gInts.Input.get() + 0xF8) + (sizeof(CVerifiedUserCmd) * (sequence_number % 90)));
+	pSafeCommand->m_cmd			   = *pCommand;
+	pSafeCommand->m_crc			   = GetChecksumForCmd(pSafeCommand->m_cmd);
 }
 //============================================================================================
 int __fastcall CHack::Hooked_KeyEvent(PVOID CHLClient, int edx, int eventcode, ButtonCode_t keynum, const char *currentBinding)
@@ -278,19 +285,19 @@ int __fastcall CHack::Hooked_KeyEvent(PVOID CHLClient, int edx, int eventcode, B
 	{
 		_INSTALL_SEH_TRANSLATOR();
 
-		VMTManager &hook = VMTManager::GetHook( CHLClient );																														// Get a pointer to the instance of your VMTManager with the function GetHook.
-		ret = hook.GetMethod<int( __thiscall * )( PVOID, int, int, const char * )>( gOffsets.keyEvent )( CHLClient, eventcode, static_cast< int >( keynum ), currentBinding ); // Call the original.
+		VMTManager &hook = VMTManager::GetHook(CHLClient); // Get a pointer to the instance of your VMTManager with the function GetHook.
+		ret				 = hook.GetMethod<int(__thiscall *)(PVOID, int, int, const char *)>(gOffsets.keyEvent)(CHLClient, eventcode, static_cast<int>(keynum), currentBinding); // Call the original.
 
-		if( eventcode == 1 )
+		if(eventcode == 1)
 		{
 			// TODO call each hacks's keyEvent code
 
 			// call our menu's input handler
-			if( gHack.menu.keyboardInput( keynum ) == 0 )
+			if(gHack.menu.keyboardInput(keynum) == 0)
 				ret = 0;
 		}
 	}
-	_CATCH_SEH_REPORT_ERROR( &gHack, Hooked_KeyEvent() );
+	_CATCH_SEH_REPORT_ERROR(&gHack, Hooked_KeyEvent());
 
 	return ret;
 }
@@ -316,7 +323,7 @@ void __stdcall CHack::Hooked_DrawModelExecute(void *state, ModelRenderInfo_t &pI
 		{
 			//Log::Console("mat name: %s", pszModelName.c_str());
 
-			IMaterial* Hands = gInts.MatSystem->FindMaterial(pszModelName.c_str(), TEXTURE_GROUP_MODEL);
+			IMaterial *Hands = gInts.MatSystem->FindMaterial(pszModelName.c_str(), TEXTURE_GROUP_MODEL);
 			Hands->SetMaterialVarFlag(MaterialVarFlags_t::MATERIAL_VAR_NO_DRAW, true);
 			gInts.ModelRender->ForcedMaterialOverride(Hands, OverrideType_t::OVERRIDE_NORMAL);
 		}
@@ -353,7 +360,7 @@ void __stdcall CHack::Hooked_DrawModelExecute(void *state, ModelRenderInfo_t &pI
 		//				mat->AlphaModulate(1.0f); // don't need this, I just use it just cause.
 
 		//				Color col = {0, 255, 255};
-		//				
+		//
 		//				float baseColor[4];
 
 		//				col.getFloatArray(baseColor);
@@ -398,23 +405,21 @@ void __stdcall CHack::Hooked_DrawModelExecute(void *state, ModelRenderInfo_t &pI
 		//}
 	}
 
-	exit:
+exit:
 	// call the original
 
 	if(!active)
 	{
 		hook.GetMethod<void(__thiscall *)(PVOID, void *, ModelRenderInfo_t &, matrix3x4 *)>(19)(gInts.ModelRender, state, pInfo, pCustomBoneToWorld);
-
 	}
 	gInts.ModelRender->ForcedMaterialOverride(NULL, OverrideType_t::OVERRIDE_NORMAL);
 }
 
-
-LRESULT __stdcall CHack::Hooked_WndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam )
+LRESULT __stdcall CHack::Hooked_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	mouseButton mb = mouseButton::NONE;
 
-	switch( uMsg )
+	switch(uMsg)
 	{
 	case WM_LBUTTONDOWN:
 		mb = mouseButton::LDOWN;
@@ -429,24 +434,24 @@ LRESULT __stdcall CHack::Hooked_WndProc( HWND hWnd, UINT uMsg, WPARAM wParam, LP
 		mb = mouseButton::RUP;
 		break;
 	case WM_MOUSEWHEEL:
-		if( (int)wParam < 0 )
+		if((int)wParam < 0)
 			mb = mouseButton::SCROLLDOWN;
 		else
 			mb = mouseButton::SCROLLUP;
 		break;
-	default: break;
+	default:
+		break;
 	}
 
-	if(mb != mouseButton::NONE )
+	if(mb != mouseButton::NONE)
 	{
 
 		int x, y;
-		gInts.Surface->SurfaceGetCursorPos( x, y );
-
+		gInts.Surface->SurfaceGetCursorPos(x, y);
 		// handle input
-		for(auto &window : gHack.windowArray )
-			window->handleMouseInput( x, y, mb );
+		for(auto &window : gHack.windowArray)
+			window->handleMouseInput(x, y, mb);
 	}
 
-	return CallWindowProc( gInts.oldWindowProc, hWnd, uMsg, wParam, lParam );
+	return CallWindowProc(gInts.oldWindowProc, hWnd, uMsg, wParam, lParam);
 }

@@ -1,6 +1,8 @@
 #include "CNoise.h"
 #include "SDK.h"
 
+CNoise gNoise;
+
 const char *CNoise::name() const
 {
 	return "NOISEMAKER SPAM";

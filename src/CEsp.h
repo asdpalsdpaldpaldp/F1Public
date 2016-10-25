@@ -4,7 +4,7 @@
 
 #include "CEntity.h"
 
-class CESP : public IHack
+class CESP : public IHack<CESP>
 {
 
 	//bool enabled;
@@ -42,11 +42,11 @@ class CESP : public IHack
 	F1_ConVar<bool> *hitboxes;
 
 	// creds to Roskonix for these nice esp boxes
-	void DynamicBox(CEntity<> ent, DWORD dwColor);
+	void DynamicBox( CBaseEntity *pBaseEntity, DWORD dwColor );
 
-	void FrameHitbox(CEntity<> player, int iHitbox);
+	void FrameHitbox( CBaseEntity *pBaseEntity, int iHitbox );
 
-	void drawBoneEsp(CEntity<> player, DWORD color);
+	void drawBoneEsp( CBaseEntity *pBaseEntity, DWORD color );
 
 public:
 	CESP()
@@ -64,9 +64,11 @@ public:
 		hitboxes = new F1_ConVar<bool>( " - Show hitboxes", false );
 	}
 
-	const char *name() const override;
+	const char *name() const;
 
-	bool processEntity(int index) override;
+	void processEntity( CBaseEntity *pBaseEntity );
 
 	void menuUpdate( F1_IConVar **menuArray, int &currIndex );
 };
+
+extern CESP gEsp;

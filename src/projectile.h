@@ -9,9 +9,9 @@
 namespace projectileHelper
 {
 
-	inline float GetProjectileSpeed(CEntity<CBaseCombatWeapon> wep)
+	inline float GetProjectileSpeed(CBaseCombatWeapon *wep)
 	{
-		classId id = wep.castToPointer<CBaseEntity>()->GetClientClass()->iClassID;
+		classId id = wep->GetClientClass()->iClassID;
 
 		float BeginCharge;
 		float Charge;
@@ -43,27 +43,27 @@ namespace projectileHelper
 
 		case classId::CTFCompoundBow:
 		{
-			BeginCharge = wep.get< float >( gEntVars.flChargeBeginTime );
+			BeginCharge = wep->GetChargeTime();
 
 			Charge = BeginCharge == 0.0f ? 0.0f : gInts.Globals->curtime - BeginCharge;
 
 			if( Charge > 1.0f )
 				Charge = 1.0f;
 
-			Log::Console( "flSpeed for huntsman is %f", 800 * Charge + 1800 );
-
 			return( 800 * Charge + 1800 );
 		}
 
 		default:
-			return 1000.0f;
+			return -1.0f;
 		}
+
+		return -1.0f;
 	}
 
-	inline float GetProjectileGravity(CEntity<CBaseCombatWeapon> wep)
+	inline float GetProjectileGravity(CBaseCombatWeapon *wep)
 	{
 
-		classId id = wep.castToPointer<CBaseEntity>()->GetClientClass()->iClassID;
+		classId id = wep->GetClientClass()->iClassID;
 
 		float BeginCharge;
 		float Charge;
@@ -71,12 +71,15 @@ namespace projectileHelper
 		switch( id )
 		{
 		case classId::CTFCompoundBow:
-			BeginCharge = wep.get< float >( gEntVars.flChargeBeginTime );
+			BeginCharge = wep->GetChargeTime();
 
 			Charge = BeginCharge == 0.0f ? 0.0f : gInts.Globals->curtime - BeginCharge;
 
 			if( Charge > 1.0f )
 				Charge = 1.0f;
+
+			//Log::Console("grav for huntsman is %f", ((1.3 - Charge) / 3) * 1000);
+
 			return ( ( ( 1.3 - Charge ) / 3 ) * 1000 );
 			break;
 
@@ -85,7 +88,7 @@ namespace projectileHelper
 		}
 	}
 
-	__declspec(noinline) inline void PhysicsClipVelocity(const Vector &in, const Vector &normal, Vector &out, float overbounce)
+	inline void PhysicsClipVelocity(const Vector &in, const Vector &normal, Vector &out, float overbounce)
 	{
 		float backoff = /*DotProduct(in, normal)*/ in.Dot(normal) * overbounce;
 
@@ -104,7 +107,7 @@ namespace projectileHelper
 			out -= ( normal * adjust );
 	}
 
-	__declspec(noinline) inline bool PhysicsApplyFriction(const Vector &in, Vector &out, float flSurfaceFriction, float flTickRate)
+	inline bool PhysicsApplyFriction(const Vector &in, Vector &out, float flSurfaceFriction, float flTickRate)
 	{
 		static ConVar *sv_friction = gInts.Cvar->FindVar("sv_friction");
 		static ConVar *sv_stopspeed = gInts.Cvar->FindVar("sv_stopspeed");
@@ -139,7 +142,7 @@ namespace projectileHelper
 		return true;
 	}
 
-	__declspec(noinline) inline void DrawDebugArrow(const Vector &vecFrom, const Vector &vecTo, const DWORD color)
+	inline void DrawDebugArrow(const Vector &vecFrom, const Vector &vecTo, const DWORD color)
 	{
 		Vector angRotation;
 		VectorAngles(vecTo - vecFrom, angRotation);
@@ -149,11 +152,11 @@ namespace projectileHelper
 		gInts.DebugOverlay->AddLineOverlay(vecFrom, vecFrom - vecRight * 10.0f, RED(color), GREEN(color), BLUE(color), true, 1.0f);
 	}
 
-	inline float GetEntityGravity(CEntity<> ent)
+	inline float GetEntityGravity(CBaseEntity *ent)
 	{
 		//static ConVar *sv_gravity = gInts.Cvar->FindVar("sv_gravity");
 
-		moveTypes type = ent.get<moveTypes>(gEntVars.movetype);
+		moveTypes type = ent->GetMoveType();
 
 		if( type == moveTypes::noclip || type == moveTypes::step || type == moveTypes::fly)
 			return 0.0f;
@@ -161,7 +164,7 @@ namespace projectileHelper
 		return 1.0f;
 	}
 
-	inline unsigned int PhysicsSolidMaskForEntity(CEntity<> ent)
+	inline unsigned int PhysicsSolidMaskForEntity(CBaseEntity *ent)
 	{
 		//VIRTUAL_CALL_START(PhysicsSolidMaskForEntity, unsigned int)(IClientEntity *);
 		//VIRTUAL_CALL_INIT(PhysicsSolidMaskForEntity, 128, pTarget);
@@ -169,21 +172,17 @@ namespace projectileHelper
 
 		typedef unsigned int(__thiscall *OriginalFn)(PVOID);
 
-		return getvfunc<OriginalFn>(ent.castToPointer<void>(), 128)(ent.castToPointer<void>());
+		return getvfunc<OriginalFn>(ent, 128)(ent);
 	}
 
-	__declspec(noinline) inline Vector PredictCorrection(CBaseCombatWeapon *pWeapon, CEntity<> target, const Vector &vecFrom, int qual)
+	inline Vector PredictCorrection(CBaseCombatWeapon *weapon, CBaseEntity *target, Vector vecFrom, int qual)
 	{
-		if(!pWeapon)
-			return vecFrom;
+		assert(target);
 
-		if(target.isNull())
-			return vecFrom;
+		assert(weapon);
 
 		//if(IsMeleeWeapon(pWeapon))
 		//	return vec3_origin;
-
-		CEntity<CBaseCombatWeapon> weapon{ ( ( CBaseEntity * ) pWeapon )->GetIndex() };
 
 		float flSpeed = GetProjectileSpeed(weapon);
 
@@ -194,47 +193,49 @@ namespace projectileHelper
 
 		static ConVar *sv_gravity = gInts.Cvar->FindVar("sv_gravity");
 		//float flLag = /*GetConstantViewLag();*/ gInts.Engine->GetNetChannelInfo()->GetLatency(FLOW_INCOMING) + gInts.Engine->GetNetChannelInfo()->GetLatency(FLOW_OUTGOING);
-		float flLag = 0;
-		bool bIsOnGround = target.get<int>(gEntVars.iFlags) & FL_ONGROUND;
+		float flLag = GetConstantLerp();
+		//float flLag = 0;
+		bool bIsOnGround = target->GetFlags() & FL_ONGROUND;
 		unsigned int mask = PhysicsSolidMaskForEntity(target);
 		Vector vecWorldGravity = Vector(0, 0, -sv_gravity->GetFloat() * GetEntityGravity(target) * gInts.Globals->interval_per_tick * gInts.Globals->interval_per_tick);
 		
-		Vector vecProjGravity = Vector( 0, 0, -GetProjectileGravity( weapon ) * gInts.Globals->interval_per_tick * gInts.Globals->interval_per_tick );
+		Vector vecProjGravity = Vector( 0, 0, -sv_gravity->GetFloat() * GetProjectileGravity( weapon ) * gInts.Globals->interval_per_tick * gInts.Globals->interval_per_tick );
 
 		// get the current velocity
-		Vector vecVelocity = EstimateAbsVelocity(target.castToPointer<CBaseEntity>());
+		Vector vecVelocity = EstimateAbsVelocity(target);
 
-		Vector vecProjVelocity = { flSpeed, 0, 0 };
+		Vector vecProjVelocity = { 0, 0, 0 };
 
 		// get the current position
+		// this is not important - any point inside the collideable will work.
 		Vector vecStepPos = target->GetAbsOrigin();
 
 		// we can get the collideable through the netvars
-		Vector vecMins = target.get<Vector>(gEntVars.collision + 0x20);
-		Vector vecMaxs = target.get<Vector>(gEntVars.collision + 0x2C);
+		Vector vecMins = target->GetCollideableMins();
+		Vector vecMaxs = target->GetCollideableMaxs();
 
 		// get velocity for a single tick
 		vecVelocity *= gInts.Globals->interval_per_tick;
-
 		vecProjVelocity *= gInts.Globals->interval_per_tick;
 
 		Vector vecPredictedPos = vecStepPos;
 
 		trace_t tr;
 		Ray_t ray;
-		//CNCTraceFilter filter(pTarget, g_NCData.m_pLP);
 
 		CBaseFilter filter;
 
 		// get the current arival time
-		float flArrivalTime = (vecFrom - vecPredictedPos).Length() / flSpeed + flLag + gInts.Globals->interval_per_tick;
+		Vector vecPredictedProjVel = vecProjVelocity; // TODO: rename - this is used for gravity
+		float flArrivalTime = (vecFrom - vecPredictedPos).Length() / (flSpeed) + flLag  + gInts.Globals->interval_per_tick;
 		Vector vecPredictedVel = vecVelocity;
 
-		filter.SetIgnoreSelf( target.castToPointer<CBaseEntity>() );
+		filter.SetIgnoreSelf( target );
 
 		for( float flTravelTime = 0.0f; flTravelTime < flArrivalTime; flTravelTime += ( gInts.Globals->interval_per_tick  * qual) )
 		{
 
+			// trace the velocity of the target
 			ray.Init( vecPredictedPos, vecPredictedPos + vecPredictedVel, vecMins, vecMaxs );
 			gInts.EngineTrace->TraceRay( ray, mask, &filter, &tr );
 
@@ -246,6 +247,7 @@ namespace projectileHelper
 
 			vecPredictedPos = tr.end;
 
+			// trace the gravity of the target
 			ray.Init( vecPredictedPos, vecPredictedPos + vecWorldGravity, vecMins, vecMaxs );
 			gInts.EngineTrace->TraceRay( ray, mask, &filter, &tr );
 
@@ -263,25 +265,29 @@ namespace projectileHelper
 					break;
 			}
 
-			flArrivalTime = ( vecFrom - vecPredictedPos ).Length() / flSpeed + flLag + gInts.Globals->interval_per_tick;
+			// add proj gravity
+			vecPredictedProjVel -= vecProjGravity;
+
+			flArrivalTime = ( vecFrom - vecPredictedPos).Length() / (flSpeed) + flLag + gInts.Globals->interval_per_tick;
 		}
 
-		vecPredictedPos -= vecPredictedVel * flArrivalTime;
+		// doing projectile gravity here is dirty (breaks when target's gravity changes)
+		// TODO do in the loop
+		vecPredictedPos -= (vecPredictedVel * flArrivalTime + vecProjGravity * flArrivalTime);
 
 		DrawDebugArrow(vecStepPos, vecPredictedPos, COLORCODE(50, 255, 0, 255));
 		return vecPredictedPos - vecStepPos;
 	}
 
-	__declspec(noinline) inline void PredictPath(CEntity<> target)
+	inline void PredictPath(CBaseEntity *target)
 	{
-		if(target.isNull())
-			return;
+		assert(target != nullptr);
 
 		static ConVar *sv_gravity = gInts.Cvar->FindVar("sv_gravity");
 
-		Vector vecVelocity = EstimateAbsVelocity(target.castToPointer<CBaseEntity>());
+		Vector vecVelocity = EstimateAbsVelocity(target);
 
-		bool bIsOnGround = target.get<int>(gEntVars.iFlags) & FL_ONGROUND;
+		bool bIsOnGround = target->GetFlags() & FL_ONGROUND;
 		unsigned int mask = PhysicsSolidMaskForEntity(target);
 		Vector vecWorldGravity = Vector(0, 0, -sv_gravity->GetFloat() * GetEntityGravity(target) * gInts.Globals->interval_per_tick * gInts.Globals->interval_per_tick);
 		Vector vecStepPos = target->GetAbsOrigin();
@@ -295,8 +301,8 @@ namespace projectileHelper
 		//Vector vecMaxs = target->GetCollideable()->OBBMaxs();
 
 		// we can get the collideable through the netvars
-		Vector vecMins = target.get<Vector>(gEntVars.collision + 0x20);
-		Vector vecMaxs = target.get<Vector>(gEntVars.collision + 0x2C);
+		Vector vecMins = target->GetCollideableMins();
+		Vector vecMaxs = target->GetCollideableMaxs();
 
 		vecVelocity *= gInts.Globals->interval_per_tick;
 
@@ -304,7 +310,7 @@ namespace projectileHelper
 		Ray_t ray;
 		CBaseFilter filter;
 
-		filter.SetIgnoreSelf(target.castToPointer<CBaseEntity>());
+		filter.SetIgnoreSelf(target);
 
 		for(int i = 0; i < 100; ++i)
 		{

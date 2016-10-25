@@ -2,7 +2,7 @@
 
 #include "IHack.h"
 
-class CAntiaim : public IHack
+class CAntiaim : public IHack<CAntiaim>
 {
 	F1_ConVar<Switch> *AASwitch;
 
@@ -31,7 +31,9 @@ public:
 	}
 
 	// Inherited via IHack
-	const char *name() const override;
-	void processCommand(CUserCmd *pUserCmd) override;
-	void menuUpdate( F1_IConVar **menuArray, int &currIndex ) override;
+	const char *name() const;
+	void processCommand(CUserCmd *pUserCmd);
+	void menuUpdate( F1_IConVar **menuArray, int &currIndex );
 };
+
+extern CAntiaim gAntiaim;

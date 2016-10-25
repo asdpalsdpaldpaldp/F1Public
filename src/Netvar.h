@@ -4,6 +4,8 @@
 
 // this and the cpp are creds to "Altimor"
 
+/*
+
 class RecvTable;
 
 class netvar_tree
@@ -36,7 +38,7 @@ private:
 	* @name:	Netvar name to search for
 	*
 	* Get the offset of the last netvar from map and return the sum of it and accum
-	*/
+	*//*
 	int get_offset_recursive(map_type &map, int acc, const char *name)
 	{
 		return acc + map[name]->offset;
@@ -51,7 +53,7 @@ private:
 	*
 	* Perform tail recursion with the nodes of the specified branch of the tree passed for map
 	* and the offset of that branch added to acc
-	*/
+	*//*
 	template <typename... args_t>
 	int get_offset_recursive(map_type &map, int acc, const char *name, args_t... args)
 	{
@@ -79,7 +81,7 @@ public:
 	* @args:	Remaining netvar names
 	*
 	* Initiate a recursive search down the branch corresponding to the specified datable name
-	*/
+	*//*
 	template <typename... args_t>
 	int get_offset(const char *name, args_t... args)
 	{
@@ -99,3 +101,4 @@ public:
 };
 
 extern netvar_tree gNetvars;
+*/

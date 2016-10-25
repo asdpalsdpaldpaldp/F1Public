@@ -2,13 +2,16 @@
 
 #include "CDrawManager.h"
 #include "CEntity.h"
+#include "CPlayerManager.h"
+
+CRadar gRadar;
 
 void CRadar::render()
 {
 	if( pEnabledRadar->getValue() == false )
 		return;
 
-	CEntity<> localEntity{ me };
+	CBaseEntity *pLocalEntity = GetBaseEntity( me );
 
 	// render the back
 	BaseClass::render();
@@ -18,7 +21,7 @@ void CRadar::render()
 	int iCenterX = xy.x + pSize->getValue();
 	int iCenterY = xy.y + pSize->getValue();
 	int iSize = pSize->getValue();
-	DWORD dwColor = gDrawManager.dwGetTeamColor( localEntity.get<int>( gEntVars.iTeam ) );
+	DWORD dwColor = gDrawManager.dwGetTeamColor( pLocalEntity->GetTeam() );
 
 	gDrawManager.OutlineRect( iCenterX - iSize - 1, iCenterY - iSize - 1, 2 * iSize + 2 + 1, 2 * iSize + 2 + 1, COLORCODE( 0, 0, 0, 255 ) );
 	//gDrawManager.OutlineRect(iCenterX - iSize - 2, iCenterY - iSize - 2, 2 * iSize + 2 + 3, 2 * iSize + 2 + 3, dwColor);
@@ -29,23 +32,23 @@ void CRadar::render()
 	gDrawManager.DrawRect( iCenterX - iSize - 11, iCenterY, 2 * iSize + 22, 1, dwColor );
 }
 
-bool CRadar::processEntity( int index )
+void CRadar::processEntity( CBaseEntity *pBaseEntity )
 {
-	CEntity<> ent{ index };
 
-	if( ent->IsDormant() || pEnabledRadar->getValue() == false || index == gInts.Engine->GetLocalPlayer() )
-		return false;
+	if( pBaseEntity->IsDormant() || pEnabledRadar->getValue() == false )
+		return;
 
 	// only draw for players
-	if( ent->GetClientClass()->iClassID == classId::CTFPlayer && ent.get<BYTE>(gEntVars.iLifeState) == LIFE_ALIVE )
+	if( pBaseEntity->GetClientClass()->iClassID == classId::CTFPlayer && pBaseEntity->IsAlive() )
 	{
-		CEntity<> local{ me };
-		if( local.isNull() == true )
-			return false;
+		//CEntity<> local{ me };
+		CBaseEntity *pLocalEntity = GetBaseEntity( me );
+		if( pLocalEntity == nullptr )
+			return;
 
-		DWORD dwColor;
-
-		dwColor = gDrawManager.dwGetTeamColor( ent.get<int>( gEntVars.iTeam ) );
+		DWORD dwColor = gPlayerManager.getColorForPlayer( pBaseEntity->GetIndex() );
+		if(dwColor == -1 )
+			dwColor = gDrawManager.dwGetTeamColor( pBaseEntity->GetTeam() );
 
 		F1_Point xy = getPos();
 
@@ -54,9 +57,9 @@ bool CRadar::processEntity( int index )
 
 		int iSize = pSize->getValue();
 
-		float flDeltaX = ent->GetAbsOrigin().x - local->GetAbsOrigin().x;
-		float flDeltaY = ent->GetAbsOrigin().y - local->GetAbsOrigin().y;
-		float flAngle = local->GetAbsAngles().y;
+		float flDeltaX = pBaseEntity->GetAbsOrigin().x - pLocalEntity->GetAbsOrigin().x;
+		float flDeltaY = pBaseEntity->GetAbsOrigin().y - pLocalEntity->GetAbsOrigin().y;
+		float flAngle = pLocalEntity->GetAbsAngles().y;
 		float flYaw = ( flAngle )* ( PI / 180.0 );
 		float flMainViewAngles_CosYaw = cos( flYaw );
 		float flMainViewAngles_SinYaw = sin( flYaw );
@@ -101,8 +104,8 @@ bool CRadar::processEntity( int index )
 		int iScreenY = iCenterY + int( y / flRange * iSize );
 
 		Vector vLocalPos, vTargetPos;
-		local->GetWorldSpaceCenter( vLocalPos );
-		ent->GetWorldSpaceCenter( vTargetPos );
+		pLocalEntity->GetWorldSpaceCenter( vLocalPos );
+		pBaseEntity->GetWorldSpaceCenter( vTargetPos );
 
 		if( vLocalPos.z > vTargetPos.z + 80 )
 		{
@@ -119,7 +122,7 @@ bool CRadar::processEntity( int index )
 		}
 	}
 
-	return true;
+	return;
 }
 
 F1_Point CRadar::getWidthHeight()

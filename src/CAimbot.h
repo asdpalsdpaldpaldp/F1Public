@@ -14,69 +14,8 @@ typedef unsigned long DWORD;
 struct mstudiobbox_t;
 typedef float matrix3x4[3][4];
 
-
-struct EntityHitbox_t
+class CAimbot : public IHack<CAimbot>
 {
-	CEntity<> e;
-	int hitbox;
-
-	bool operator==(const EntityHitbox_t &other) const
-	{
-		return e.index() == other.e.index() && hitbox == other.hitbox;
-	}
-};
-
-template<>
-struct std::hash<EntityHitbox_t>
-{
-	size_t operator()(const EntityHitbox_t &other) const
-	{
-		size_t hash = std::hash<int>()(other.e.index());
-		hash_combine<int>(hash, other.hitbox);
-		return hash;
-	}
-};
-
-class CAimbot : public IHack
-{
-
-	//bool enabled;
-	//int hitbox;
-	//bool zoomOnly;
-	//bool respectChargedDamage;
-	//float zoomLowestDamage;
-	//bool ignoreCond;
-	//bool ignoreFriends;
-	//bool velocityPrediction;
-	//bool aimOnClick;
-	//bool silentFix;
-	//bool projectilePrediction;
-	//bool noSilentAim;
-	//bool runSimulation;
-	//int tSystem;
-	//int fovLimit;
-	//bool classPriorityEnabled;
-
-
-
-	//VAR( bool, enabled, "Enabled" );
-	//VAR( bool, aimMelee, "Aim for melee?" );
-	//VAR( bool, autoHitbox, "Auto hitbox" );
-	//VAR( int, hitbox, "Hitbox number", 0, 17, 0, 1 );
-	//VAR( bool, zoomOnly, "Zoomed only" );
-	//VAR( bool, respectChargedDamage, "Charged damage" );
-	//VAR( float, zoomLowestDamage, "Lowest damage", 0.0f, 100.0f, 15.0f, 1.0f );
-	//VAR( bool, ignoreCond, "Ignore cond players" );
-	//VAR( bool, ignoreFriends, "Ignore friends" );
-	//VAR( bool, velocityPrediction, "Velocity Prediction" );
-	//VAR( bool, click, "Aim on click" );
-	//VAR( bool, silentFix, "Silent movement fix" );
-	//VAR( bool, projectilePrediction, "Projectile prediction" );
-	//VAR( bool, noSilentAim, "No silent" );
-	//VAR( bool, runSimulation, "Other pred (glitchy)" );
-	//VAR( int, tSystem, "Target system", 0, 1, 0, 1 );
-	//VAR( int, fovLimit, "Max FOV", 0, 180, 60, 5 );
-
 	enum predictionMode
 	{
 		PRED_None,
@@ -103,22 +42,6 @@ class CAimbot : public IHack
 	F1_ConVar<int> *fovLimit;
 	F1_ConVar<bool> *useSilent;
 
-	// vars for priority
-	//var priority_list_switch{"Priority", &priority_list};
-
-	//int classPriorities[9];
-
-	//var enable_pri{"Enable priority", &classPriorityEnabled};
-	//var scout_pri{"Scout", &classPriorities[0], 1, 10, 1, 1};
-	//var sniper_pri{"Sniper", &classPriorities[1], 1, 10, 1, 1};
-	//var soldier_pri{"Soldier", &classPriorities[2], 1, 10, 1, 1};
-	//var demo_pri{"Demoman", &classPriorities[3], 1, 10, 1, 1};
-	//var medic_pri{"Medic", &classPriorities[4], 1, 10, 1, 1};
-	//var heavy_pri{"Heavy", &classPriorities[5], 1, 10, 1, 1};
-	//var pyro_pri{"Pyro", &classPriorities[6], 1, 10, 1, 1};
-	//var spy_pri{"Spy", &classPriorities[7], 1, 10, 1, 1};
-	//var engi_pri{"Engi", &classPriorities[8], 1, 10, 1, 1};
-
 	matrix3x4 BoneToWorld[128];
 	Vector Min, Max;
 	mstudiobbox_t *box;
@@ -128,22 +51,7 @@ class CAimbot : public IHack
 	Vector oldAngles;
 	Vector target;
 
-	// std::vector<Point> positions;
-
-	// maps entitys to their distance
-	// if an entity is on the list it has to both be valid and visible
-
-	// std::unordered_map<int, float> stats;
-
-	//CDistanceTargetSystem targetSystem;
-
-	IBaseTargetSystem *targetSystem = nullptr;
-
-	ConVar *Enabled;
-
-
-	// TODO this might not be the best soloution
-	std::unordered_map<EntityHitbox_t, Vector> hitboxCache;
+	DWORD targetSystemKey;
 
 public:
 	CAimbot()
@@ -219,7 +127,7 @@ public:
 		valid   = false;
 		predPos = currPos = {0.0f, 0.0f, 0.0f};
 
-		targetSystem = new CDistanceTargetSystem();
+		//targetSystem = new CDistanceTargetSystem();
 
 		// extrapPos = new Vector[maxExtrap];
 
@@ -227,44 +135,47 @@ public:
 	}
 
 	// Inherited via IHack
-	virtual const char *name() const override;
-	virtual void processCommand(CUserCmd *pUserCmd) override;
-	virtual bool paint() override;
-	virtual bool processEntity(int index) override;
-	void menuUpdate( F1_IConVar **menuArray, int &currIndex ) override;
+	const char *name() const;
+	void processCommand(CUserCmd *pUserCmd);
+	bool paint();
+	void menuUpdate( F1_IConVar **menuArray, int &currIndex );
 
 private:
 	// inline float getDistance(CEntity<> &ent);
 
 	inline float getDistanceToVector(Vector v);
 
-	inline bool visible(CEntity<> &ent);
+	inline bool visible( CBaseEntity *pBaseEntity );
 
-	inline bool visible(CEntity<> &ent, int hitbox);
+	inline bool visible( CBaseEntity *pBaseEntity, int hitbox );
 
-	inline bool visible(CEntity<> &ent, Vector v);
+	inline bool visible( CBaseEntity *pBaseEntity, Vector v );
 
 	inline void aim(CUserCmd *pUserCmd);
 
-	inline bool isValidTarget(CEntity<> &ent);
+	inline bool isValidTarget( CBaseEntity *pBaseEntity );
+
+	inline bool isVisibleTarget( CBaseEntity *pBaseEntity, Vector &hit );
 
 	// this assumes the index is the target
-	inline Vector getHitBoxVector(CEntity<> &ent, int hitbox);
+	inline Vector getHitBoxVector( CBaseEntity *pBaseEntity, int hitbox );
 
 	inline mstudiobbox_t *GetHitbox(int iHitbox, DWORD *pHeader);
 
-	inline bool isPlayer(CEntity<> &ent);
+	inline bool isPlayer( CBaseEntity *pBaseEntity );
 
 	// inline int selectTarget();
 
-	inline bool checkCond(CEntity<> &ent);
+	inline bool checkCond( CBaseEntity *pBaseEntity );
 
 	// takes a vector and entity and scales the vector by the entitys velocity
-	inline Vector predict(CEntity<> &ent, Vector v);
+	inline Vector predict( CBaseEntity *pBaseEntity, Vector v );
 
 	inline void silentMovementFix(CUserCmd *pUserCmd, Vector angles);
 
-	inline bool isValidBuilding(CEntity<> &ent);
+	inline bool isValidBuilding( CBaseEntity *pBaseEntity );
 
-	inline int findBestHitbox(CEntity<> &ent);
+	inline int findBestHitbox( CBaseEntity *pBaseEntity );
 };
+
+extern CAimbot gAimbot;

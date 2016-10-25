@@ -2,7 +2,7 @@
 
 #include "IHack.h"
 
-class CNoise : public IHack
+class CNoise : public IHack<CNoise>
 {
 
 	//bool enabled;
@@ -18,9 +18,11 @@ public:
 	}
 
 	// Inherited via IHack
-	virtual const char *name() const override;
-	virtual void processCommand(CUserCmd *pUserCmd) override;
+	const char *name() const;
+	void processCommand(CUserCmd *pUserCmd);
 
-	void menuUpdate( F1_IConVar **menuArray, int &currIndex ) override;
+	void menuUpdate( F1_IConVar **menuArray, int &currIndex );
 
 };
+
+extern CNoise gNoise;

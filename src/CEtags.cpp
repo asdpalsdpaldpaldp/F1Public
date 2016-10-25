@@ -2,6 +2,8 @@
 
 #include "SDK.h"
 
+DEFINE_ENUM_FLAG_OPERATORS(EntTag);
+
 CEntTag::CEntTag(CBaseEntity *ent) : tags(EntTag::NO_TAGS)
 {
 	if(ent == nullptr)

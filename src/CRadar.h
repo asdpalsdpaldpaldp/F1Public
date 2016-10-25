@@ -4,7 +4,7 @@
 
 #include "F1_Gui.h"
 
-class CRadar : public IHack, public F1_CWindow
+class CRadar : public IHack<CRadar>, public F1_CWindow
 {
 	F1_ConVar<Switch> *pRadarSwitch;
 
@@ -29,11 +29,13 @@ public:
 
 	void render() override;
 
-	bool processEntity( int index ) override;
+	void processEntity( CBaseEntity *pBaseEntity );
 
 	F1_Point getWidthHeight() override;
 
 	F1_Rect getBounds() override;
 
-	void menuUpdate( F1_IConVar **pMenuArray, int &currIndex ) override;
+	void menuUpdate( F1_IConVar **pMenuArray, int &currIndex );
 };
+
+extern CRadar gRadar;
