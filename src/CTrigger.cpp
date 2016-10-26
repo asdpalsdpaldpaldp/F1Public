@@ -74,6 +74,9 @@ void CTrigger::processCommand(CUserCmd *pUserCmd)
 	if(!trace.m_pEnt)
 		return;
 
+	if(trace.hitGroup < 1)
+		return;
+
 	if( (tf_hitbox)trace.hitbox != hitbox->getValue() )
 		return;
 
