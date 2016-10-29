@@ -10,7 +10,7 @@
 // prepare to die
 #define ACTIVE_HACKS \
 	gAimbot, gAnnouncer, gAntiaim, *CAntiSmac::getInst(), \
-	gAutoAirblast, /*gBackstab,*/ gEsp, /*gGlow,*/ gNokick, gPlayerManager, \
+	gAutoAirblast, /*gBackstab,*/ gEsp, /*gGlow, gNokick, */gPlayerManager, \
 	gPureBypass, gRadar, gTrigger, gMisc, gHack
 
 class CHack : public IHack<CHack>
