@@ -7,6 +7,7 @@ typedef void *(*CreateInterfaceFn)(const char *pName, int *pReturnCode);
 
 class srcFactory
 {
+	void *getImpl(const char *name, int *ret = nullptr);
 public:
 	srcFactory(void *fac)
 	{
@@ -16,7 +17,7 @@ public:
 	template<typename T>
 	T get(const char *name, int *ret = nullptr)
 	{
-		return static_cast<T>(factory(name, ret));
+		return static_cast<T>(getImpl(name, ret));
 	}
 
 	// backwards compatability

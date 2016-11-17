@@ -9,12 +9,12 @@ inline bool isPlayerOnFriendsList(int index)
 {
 	player_info_t pInfo;
 
-	if(!gInts.Engine->GetPlayerInfo(index, &pInfo))
+	if(!gInts->Engine->GetPlayerInfo(index, &pInfo))
 		return false;
 
-	for(int i = 0; i < gInts.steam.friends->GetFriendCount(k_EFriendFlagImmediate); i++)
+	for(int i = 0; i < gInts->steam.friends->GetFriendCount(k_EFriendFlagImmediate); i++)
 	{
-		CSteamID friendID = gInts.steam.friends->GetFriendByIndex(i, k_EFriendFlagImmediate);
+		CSteamID friendID = gInts->steam.friends->GetFriendByIndex(i, k_EFriendFlagImmediate);
 
 		// this makes the assumption that it is an individual account and it is in the public universe ( the most common type )
 		CSteamID pInfoFriendID{pInfo.friendsID, k_EUniversePublic, k_EAccountTypeIndividual};
@@ -74,7 +74,7 @@ inline bool bulletTime(CEntity<> &ent, bool shouldUseIntervals)
 		return false;
 
 	// either use intervals or use 1
-	float interval = shouldUseIntervals ? shouldUseIntervals * gInts.Globals->interval_per_tick : 1;
+	float interval = shouldUseIntervals ? shouldUseIntervals * gInts->Globals->interval_per_tick : 1;
 
 	float tickBase = static_cast<float>(ent.get<int>(gEntVars.nTickBase)) * interval;
 
@@ -93,7 +93,7 @@ inline bool bulletTime(CEntity<> &ent, bool shouldUseIntervals)
 inline bool bulletTime(CBaseEntity *pBaseEntity, bool)
 {
 	// either use intervals or use 1
-	float interval = gInts.Globals->interval_per_tick;
+	float interval = gInts->Globals->interval_per_tick;
 
 	float tickBase = static_cast<float>( pBaseEntity->GetTickBase() ) * interval;
 
@@ -137,7 +137,7 @@ inline bool bCanShoot(CBaseEntity *ent, CUserCmd *pUserCmd)
 inline void generateItemList()
 {
 	printf("enum class classId : int\n{\n");
-	for(ClientClass *pCC = gInts.Client->GetAllClasses(); pCC; pCC = pCC->pNextClass)
+	for(ClientClass *pCC = gInts->Client->GetAllClasses(); pCC; pCC = pCC->pNextClass)
 	{
 		printf("\t%s = %i,\n", pCC->chName, pCC->iClassID);
 	}
@@ -192,7 +192,7 @@ inline Vector EstimateAbsVelocity(CBaseEntity *ent)
 // TODO MOVE THIS INTO CANTISMAC
 inline DWORD WINAPI killCvars(LPVOID param)
 {
-	ConCommandBase *base = gInts.Cvar->GetCommands();
+	ConCommandBase *base = gInts->Cvar->GetCommands();
 
 	int count = 0;
 
@@ -234,7 +234,7 @@ inline DWORD WINAPI killCvars(LPVOID param)
 		count++;
 	}
 
-	gInts.Cvar->ConsolePrintf("Unprotected %d cvars\n", count);
+	gInts->Cvar->ConsolePrintf("Unprotected %d cvars\n", count);
 
 	return 0;
 }
@@ -257,29 +257,29 @@ public:
 	static void safeRunSimulation(CPrediction *pred, CUserCmd *pCommand, CBaseEntity *pBaseEnt)
 	{
 		// back up globals
-		float frameTime = gInts.Globals->frametime;
-		float curTime = gInts.Globals->curtime;
+		float frameTime = gInts->Globals->frametime;
+		float curTime = gInts->Globals->curtime;
 
 		// set up the globals
-		gInts.Globals->curtime = pBaseEnt->GetTickBase() * gInts.Globals->interval_per_tick;
-		gInts.Globals->frametime = gInts.Globals->interval_per_tick;
+		gInts->Globals->curtime = pBaseEnt->GetTickBase() * gInts->Globals->interval_per_tick;
+		gInts->Globals->frametime = gInts->Globals->interval_per_tick;
 
 		runSimulation(pred, pCommand->command_number, curTime, pCommand, pBaseEnt);
 
 		// restore globals
-		gInts.Globals->frametime = frameTime;
-		gInts.Globals->curtime = curTime;
+		gInts->Globals->frametime = frameTime;
+		gInts->Globals->curtime = curTime;
 	}
 
 	static void safeRunSimulation(CPrediction *pred, CBaseEntity *pBaseEnt)
 	{
 		// back up globals
-		float frameTime = gInts.Globals->frametime;
-		float curTime   = gInts.Globals->curtime;
+		float frameTime = gInts->Globals->frametime;
+		float curTime   = gInts->Globals->curtime;
 
 		// set up the globals
-		gInts.Globals->curtime = pBaseEnt->GetTickBase() * gInts.Globals->interval_per_tick;
-		gInts.Globals->frametime = gInts.Globals->interval_per_tick;
+		gInts->Globals->curtime = pBaseEnt->GetTickBase() * gInts->Globals->interval_per_tick;
+		gInts->Globals->frametime = gInts->Globals->interval_per_tick;
 
 		CUserCmd cmd;
 
@@ -287,8 +287,8 @@ public:
 		runSimulation(pred, cmd.command_number, curTime, &cmd, pBaseEnt);
 
 		// restore globals
-		gInts.Globals->frametime = frameTime;
-		gInts.Globals->curtime   = curTime;
+		gInts->Globals->frametime = frameTime;
+		gInts->Globals->curtime   = curTime;
 	}
 
 	static void safeRunCommand( CPrediction *pred, CEntity<> ent )
@@ -304,12 +304,12 @@ public:
 			return;
 
 		// back up globals
-		float frameTime = gInts.Globals->frametime;
-		float curTime = gInts.Globals->curtime;
+		float frameTime = gInts->Globals->frametime;
+		float curTime = gInts->Globals->curtime;
 
 		// set up the globals
-		gInts.Globals->curtime = ent.get<float>( gEntVars.nTickBase ) * gInts.Globals->interval_per_tick;
-		gInts.Globals->frametime = gInts.Globals->interval_per_tick;
+		gInts->Globals->curtime = ent.get<float>( gEntVars.nTickBase ) * gInts->Globals->interval_per_tick;
+		gInts->Globals->frametime = gInts->Globals->interval_per_tick;
 
 		CUserCmd cmd;
 
@@ -319,22 +319,22 @@ public:
 		// set the current cmd
 		ent.set<CUserCmd *>( 0x107C, &cmd );
 
-		gInts.GameMovement->StartTrackPredictionErrors( pEnt );
+		gInts->GameMovement->StartTrackPredictionErrors( pEnt );
 
 		// do actual player cmd prediction
-		gInts.Prediction->SetupMove( pEnt, &cmd, gInts.MoveHelper, &moveData );
-		gInts.GameMovement->ProcessMovement( pEnt, &moveData );
-		//gInts.Prediction->RunCommand( pEnt, &cmd, gInts.MoveHelper );
-		gInts.Prediction->FinishMove( pEnt, &cmd, &moveData );
+		gInts->Prediction->SetupMove( pEnt, &cmd, /*gInts->MoveHelper*/ nullptr, &moveData );
+		gInts->GameMovement->ProcessMovement( pEnt, &moveData );
+		//gInts->Prediction->RunCommand( pEnt, &cmd, gInts->MoveHelper );
+		gInts->Prediction->FinishMove( pEnt, &cmd, &moveData );
 
-		gInts.GameMovement->FinishTrackPredictionErrors( pEnt );
+		gInts->GameMovement->FinishTrackPredictionErrors( pEnt );
 
 		// reset the current cmd
 		ent.set<CUserCmd *>( 0x107C, 0 );
 
 		// restore globals
-		gInts.Globals->frametime = frameTime;
-		gInts.Globals->curtime = curTime;
+		gInts->Globals->frametime = frameTime;
+		gInts->Globals->curtime = curTime;
 	}
 
 	static void safeRunCommand(CPrediction *pred, CBaseEntity *pEnt)
@@ -345,12 +345,12 @@ public:
 			return;
 
 		// back up globals
-		float frameTime = gInts.Globals->frametime;
-		float curTime = gInts.Globals->curtime;
+		float frameTime = gInts->Globals->frametime;
+		float curTime = gInts->Globals->curtime;
 
 		// set up the globals
-		gInts.Globals->curtime = pEnt->GetTickBase() * gInts.Globals->interval_per_tick;
-		gInts.Globals->frametime = gInts.Globals->interval_per_tick;
+		gInts->Globals->curtime = pEnt->GetTickBase() * gInts->Globals->interval_per_tick;
+		gInts->Globals->frametime = gInts->Globals->interval_per_tick;
 
 		CUserCmd cmd;
 
@@ -360,22 +360,22 @@ public:
 		// set the current cmd
 		pEnt->set(0x107C, &cmd);
 
-		gInts.GameMovement->StartTrackPredictionErrors(pEnt);
+		gInts->GameMovement->StartTrackPredictionErrors(pEnt);
 
 		// do actual player cmd prediction
-		gInts.Prediction->SetupMove(pEnt, &cmd, gInts.MoveHelper, &moveData);
-		gInts.GameMovement->ProcessMovement(pEnt, &moveData);
-		//gInts.Prediction->RunCommand( pEnt, &cmd, gInts.MoveHelper );
-		gInts.Prediction->FinishMove(pEnt, &cmd, &moveData);
+		gInts->Prediction->SetupMove(pEnt, &cmd, /*gInts->MoveHelper*/ nullptr, &moveData);
+		gInts->GameMovement->ProcessMovement(pEnt, &moveData);
+		//gInts->Prediction->RunCommand( pEnt, &cmd, gInts->MoveHelper );
+		gInts->Prediction->FinishMove(pEnt, &cmd, &moveData);
 
-		gInts.GameMovement->FinishTrackPredictionErrors(pEnt);
+		gInts->GameMovement->FinishTrackPredictionErrors(pEnt);
 
 		// reset the current cmd
 		pEnt->set(0x107C, 0);
 
 		// restore globals
-		gInts.Globals->frametime = frameTime;
-		gInts.Globals->curtime = curTime;
+		gInts->Globals->frametime = frameTime;
+		gInts->Globals->curtime = curTime;
 	}
 };
 

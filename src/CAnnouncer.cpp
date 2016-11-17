@@ -9,8 +9,8 @@ CAnnouncer gAnnouncer;
 void CAnnouncer::init()
 {
 	// Log::Console("adding listeners");
-	gInts.EventManager->AddListener(this, "player_death", false);
-	gInts.EventManager->AddListener(this, "player_spawn", false);
+	gInts->EventManager->AddListener(this, "player_death", false);
+	gInts->EventManager->AddListener(this, "player_spawn", false);
 
 	return;
 }
@@ -18,7 +18,7 @@ void CAnnouncer::init()
 void CAnnouncer::FireGameEvent(IGameEvent *event)
 {
 	//Log::Console("%s Attacker: %i CustomKill: %i Me: %i Userid: %i Inflictor: %i Time: %f", event->GetName(), event->GetInt("attacker", 0),
-	//			 event->GetInt("customkill", 0), me, event->GetInt("userid", 0), event->GetInt("inflictor_entindex", 0), gInts.Globals->curtime);
+	//			 event->GetInt("customkill", 0), me, event->GetInt("userid", 0), event->GetInt("inflictor_entindex", 0), gInts->Globals->curtime);
 	if(gLocalPlayerVars.info.userID == 0) // CBasePlayer::GetUserId() You can get this from the player_info_t struct as well.
 		return;
 
@@ -35,7 +35,7 @@ void CAnnouncer::FireGameEvent(IGameEvent *event)
 			killCounter++;
 			killStreakCounter++;
 
-			if((gInts.Globals->curtime - lastKillTime) < killStreakTimeout)
+			if((gInts->Globals->curtime - lastKillTime) < killStreakTimeout)
 			{
 				// This is done to prevent getting spammed with killstreak sounds when killing like 4 people at once with a crit sticky, so it will play the
 				// most recent sound when Think is called.
@@ -119,7 +119,7 @@ void CAnnouncer::FireGameEvent(IGameEvent *event)
 					PlaySound("UT99/godlike.wav");
 #endif
 			}
-			lastKillTime = gInts.Globals->curtime;
+			lastKillTime = gInts->Globals->curtime;
 		}
 		return;
 	}
@@ -150,10 +150,10 @@ void CAnnouncer::processCommand(CUserCmd *pUserCmd)
 void CAnnouncer::PlaySound(const char *soundName)
 {
 	// other method
-	// auto filt = CSingleUserRecipientFilter{gInts.EntList->GetClientEntity(me)};
-	// gInts.SoundEngine->EmitSound(filt, -1, 0, soundName, 100, 100);
+	// auto filt = CSingleUserRecipientFilter{gInts->EntList->GetClientEntity(me)};
+	// gInts->SoundEngine->EmitSound(filt, -1, 0, soundName, 100, 100);
 
 	// works fine when running sv_pure 0 or -1
 	// meaning that it works fine with the sv_pure bypass
-	gInts.Surface->PlaySound(soundName);
+	gInts->Surface->PlaySound(soundName);
 }

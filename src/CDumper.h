@@ -42,7 +42,7 @@ public:
 
 	void SaveDump()
 	{
-		ClientClass *pList = gInts.Client->GetAllClasses();
+		ClientClass *pList = gInts->Client->GetAllClasses();
 
 		while(pList)
 		{

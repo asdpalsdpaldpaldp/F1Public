@@ -2,7 +2,7 @@
 
 //#include <GSL\\gsl.h>
 
-#define Expects(cond) if(!(cond)) throw(0)
+#define Expects(cond) if(!(cond)){ throw std::exception("Condition was not met"); }
 
 // ugly ugly hack for default construction
 // ALWAYS ASIGN TO THIS OR IT IS NOT GARUNTEED TO NOT BE NULL!
@@ -28,12 +28,6 @@ public:
     {
         ptr_ = other.get();
         return *this;
-    }
-
-	// what am i doing
-	explicit nn_interface()
-    {
-	    
     }
 
     // prevents compilation when someone attempts to assign a nullptr 

@@ -32,7 +32,7 @@ bool __fastcall CHack::Hooked_CreateMove(PVOID ClientMode, int edx, float input_
 		gLocalPlayerVars.team	= pBaseLocalEntity->GetTeam();
 		gLocalPlayerVars.flags   = pBaseLocalEntity->GetFlags();
 		gLocalPlayerVars.cmdNum  = pCommand->command_number;
-		gLocalPlayerVars.info	= gInts.Engine->GetPlayerInfo(me);
+		gLocalPlayerVars.info	= gInts->Engine->GetPlayerInfo(me);
 		gLocalPlayerVars.thisCmd = pCommand;
 
 		CBaseEntity *pLocalWep = pBaseLocalEntity->GetActiveWeapon();
@@ -62,41 +62,37 @@ bool __fastcall CHack::Hooked_CreateMove(PVOID ClientMode, int edx, float input_
 		memset(&moveData, 0, sizeof(CMoveData));
 
 		// back up the globals
-		float oldCurTime   = gInts.Globals->curtime;
-		float oldFrameTime = gInts.Globals->frametime;
+		float oldCurTime   = gInts->Globals->curtime;
+		float oldFrameTime = gInts->Globals->frametime;
 
 		// set up the globals
-		gInts.Globals->curtime   = pBaseLocalEntity->GetTickBase() * gInts.Globals->interval_per_tick;
-		gInts.Globals->frametime = gInts.Globals->interval_per_tick;
+		gInts->Globals->curtime   = pBaseLocalEntity->GetTickBase() * gInts->Globals->interval_per_tick;
+		gInts->Globals->frametime = gInts->Globals->interval_per_tick;
 
 		// set the current cmd
 		pBaseLocalEntity->set<CUserCmd *>(0x107C, pCommand);
 
-		gInts.GameMovement->StartTrackPredictionErrors(pBaseLocalEntity);
+		gInts->GameMovement->StartTrackPredictionErrors(pBaseLocalEntity);
 
 		// do actual player cmd prediction
-		gInts.Prediction->SetupMove(pBaseLocalEntity, pCommand, gInts.MoveHelper, &moveData);
-		gInts.GameMovement->ProcessMovement(pBaseLocalEntity, &moveData);
-		//gInts.Prediction->RunCommand( pLocal, pCommand, gInts.MoveHelper );
-		gInts.Prediction->FinishMove(pBaseLocalEntity, pCommand, &moveData);
+		gInts->Prediction->SetupMove(pBaseLocalEntity, pCommand, /*gInts->MoveHelper*/ nullptr, &moveData);
+		gInts->GameMovement->ProcessMovement(pBaseLocalEntity, &moveData);
+		//gInts->Prediction->RunCommand( pLocal, pCommand, gInts->MoveHelper );
+		gInts->Prediction->FinishMove(pBaseLocalEntity, pCommand, &moveData);
 
-		gInts.GameMovement->FinishTrackPredictionErrors(pBaseLocalEntity);
+		gInts->GameMovement->FinishTrackPredictionErrors(pBaseLocalEntity);
 
 		// reset the current cmd
 		pBaseLocalEntity->set<CUserCmd *>(0x107C, 0);
 
 		// restore the globals
-		gInts.Globals->curtime   = oldCurTime;
-		gInts.Globals->frametime = oldFrameTime;
+		gInts->Globals->curtime   = oldCurTime;
+		gInts->Globals->frametime = oldFrameTime;
 
 		// end local entity prediction
 
 		// set these before the hacks run
 		// we cant have these in chlmove as by that point they have already run
-
-		gHack.silentData.fMove = pCommand->forwardmove;
-		gHack.silentData.sMove = pCommand->sidemove;
-		gHack.silentData.view  = pCommand->viewangles;
 
 		//static bool oneTime = false;
 		//if(!oneTime )
@@ -123,7 +119,7 @@ bool __fastcall CHack::Hooked_CreateMove(PVOID ClientMode, int edx, float input_
 		//bool *bSendPacket = ( bool * ) ( *( char ** ) ( gHack.createMoveEBP - 0x1 ) );
 
 		NET_SetConVar setName("name", gLocalPlayerVars.name.c_str());
-		gInts.Engine->GetNetChannelInfo()->SendNetMsg(*(INetMessage *)&setName);
+		gInts->Engine->GetNetChannelInfo()->SendNetMsg(*(INetMessage *)&setName);
 	}
 	_CATCH_SEH_REPORT_ERROR(&gHack, createMove())
 
@@ -135,7 +131,7 @@ void __fastcall CHack::Hooked_CHLCreateMove(PVOID CHLClient, int edx, int sequen
 
 	//sequence_number = 188;
 
-	CUserCmd *pCommand = gInts.Input->GetUserCmd(sequence_number);
+	CUserCmd *pCommand = gInts->Input->GetUserCmd(sequence_number);
 
 	if(!pCommand)
 		return;
@@ -150,7 +146,7 @@ void __fastcall CHack::Hooked_CHLCreateMove(PVOID CHLClient, int edx, int sequen
 	static int iSpeedCounter = 0; //Setup a global counter.
 	static float step		 = 0;
 	//If I'm pressing MOUSE4 and the counter was not 0.
-	if(iSpeedCounter > 0 && (GetAsyncKeyState(VK_LSHIFT) || gHack.speedHackConstant->getValue() == true))
+	if(iSpeedCounter > 0 && (GetAsyncKeyState(VK_LSHIFT) || gHack.speedHackConstant.getValue() == true))
 	{
 		iSpeedCounter--; //Decrement the counter.
 		//pLocalEntity->SetSimulationTime(pLocalEntity->GetSimulationTime() + step);
@@ -166,7 +162,7 @@ void __fastcall CHack::Hooked_CHLCreateMove(PVOID CHLClient, int edx, int sequen
 	}
 	else
 	{
-		auto counter  = gHack.speedHackSpeed->getValue();
+		auto counter  = gHack.speedHackSpeed.getValue();
 		iSpeedCounter = counter; //We want to run this 7 times.
 
 		// do m_flSimulationTime mod here
@@ -189,16 +185,16 @@ void __fastcall CHack::Hooked_CHLCreateMove(PVOID CHLClient, int edx, int sequen
 
 	// TODO do we really need to do this?
 	// manually interpolate each entity
-	for( int i = 0; i < gInts.EntList->GetHighestEntityIndex(); i++ )
+	for( int i = 0; i < gInts->EntList->GetHighestEntityIndex(); i++ )
 	{
-		CBaseEntity *pBaseEntity = gInts.EntList->GetClientEntity( i );
+		CBaseEntity *pBaseEntity = gInts->EntList->GetClientEntity( i );
 
 		if(pBaseEntity != NULL )
 			if(!pBaseEntity->IsDormant())
-				pBaseEntity->Interpolate( gInts.Globals->curtime );
+				pBaseEntity->Interpolate( gInts->Globals->curtime );
 	}
 
-	pCommand->tick_count += gHack.tickCountConstant->getValue();
+	pCommand->tick_count += gHack.tickCountConstant.getValue();
 
 	// reset the cache
 	gCache.blow();
@@ -211,6 +207,7 @@ void __fastcall CHack::Hooked_CHLCreateMove(PVOID CHLClient, int edx, int sequen
 	//pCommand->command_number = 3599;
 	//pCommand->random_seed = CRandom::MD5_PseudoRandom( 3599 ) & 0x7fffffff;
 
+	/*
 	if(bCanShoot(pLocalEntity, pCommand) && pLocalEntity)
 	{
 		*bSendPacket = false;
@@ -220,26 +217,26 @@ void __fastcall CHack::Hooked_CHLCreateMove(PVOID CHLClient, int edx, int sequen
 		// only reset the angles if we are not attacking
 		*bSendPacket = true;
 
-		pCommand->viewangles = gHack.silentData.view;
-		// gInts.Engine->SetViewAngles(silentData.view);
+		// gInts->Engine->SetViewAngles(silentData.view);
 
 		// dont set these
 		// pUserCmd->sidemove = silentData.sMove;
 		// pUserCmd->forwardmove = silentData.fMove;
 
 		// oh dear
-		//gInts.ClientState->chokedcommands++;
+		//gInts->ClientState->chokedcommands++;
 	}
 	else
 	{
 		*bSendPacket = true;
 	}
+	*/
 
-	if(gHack.fakeLag->getValue() == true)
+	if(gHack.fakeLag.getValue() == true)
 	{
 		static int currLagIndex = 0;
 
-		int maxLagIndex = gHack.fakeLagAmount->getValue();
+		int maxLagIndex = gHack.fakeLagAmount.getValue();
 
 		if(currLagIndex < maxLagIndex)
 		{
@@ -257,12 +254,12 @@ void __fastcall CHack::Hooked_CHLCreateMove(PVOID CHLClient, int edx, int sequen
 		*bSendPacket = true;
 	}
 
-	if(gHack.fakeCrouch->getValue() == 1)
+	if(gHack.fakeCrouch.getValue() == 1)
 	{
 		//pCommand->viewangles.y -= 180;
 		pCommand->viewangles.z = 90;
 	}
-	else if(gHack.fakeCrouch->getValue() == 2)
+	else if(gHack.fakeCrouch.getValue() == 2)
 	{
 		//pCommand->viewangles.y += 180;
 		pCommand->viewangles.z = 90;
@@ -273,7 +270,7 @@ void __fastcall CHack::Hooked_CHLCreateMove(PVOID CHLClient, int edx, int sequen
 	}
 
 	// resign the cmd
-	CVerifiedUserCmd *pSafeCommand = (CVerifiedUserCmd *)(*(DWORD *)(gInts.Input.get() + 0xF8) + (sizeof(CVerifiedUserCmd) * (sequence_number % 90)));
+	CVerifiedUserCmd *pSafeCommand = (CVerifiedUserCmd *)(*(DWORD *)(gInts->Input.get() + 0xF8) + (sizeof(CVerifiedUserCmd) * (sequence_number % 90)));
 	pSafeCommand->m_cmd			   = *pCommand;
 	pSafeCommand->m_crc			   = GetChecksumForCmd(pSafeCommand->m_cmd);
 }
@@ -305,27 +302,27 @@ int __fastcall CHack::Hooked_KeyEvent(PVOID CHLClient, int edx, int eventcode, B
 // no checks here ;)
 CUserCmd *__fastcall CHack::Hooked_GetUserCmd(PVOID pInput, int edx, int sequence_number)
 {
-	return &(*(CUserCmd **)((DWORD)gInts.Input.get() + 0xF4))[sequence_number % 90];
+	return &(*(CUserCmd **)((DWORD)gInts->Input.get() + 0xF4))[sequence_number % 90];
 }
 
 void __stdcall CHack::Hooked_DrawModelExecute(void *state, ModelRenderInfo_t &pInfo, matrix3x4 *pCustomBoneToWorld)
 {
 
-	auto &hook = VMTManager::GetHook(gInts.ModelRender);
+	auto &hook = VMTManager::GetHook(gInts->ModelRender);
 
 	static bool active = false;
 
 	if(pInfo.pModel)
 	{
-		std::string pszModelName = gInts.ModelInfo->GetModelName((DWORD *)pInfo.pModel);
+		std::string pszModelName = gInts->ModelInfo->GetModelName((DWORD *)pInfo.pModel);
 
 		if(pszModelName.find("arms") != std::string::npos)
 		{
 			//Log::Console("mat name: %s", pszModelName.c_str());
 
-			IMaterial *Hands = gInts.MatSystem->FindMaterial(pszModelName.c_str(), TEXTURE_GROUP_MODEL);
+			IMaterial *Hands = gInts->MatSystem->FindMaterial(pszModelName.c_str(), TEXTURE_GROUP_MODEL);
 			Hands->SetMaterialVarFlag(MaterialVarFlags_t::MATERIAL_VAR_NO_DRAW, true);
-			gInts.ModelRender->ForcedMaterialOverride(Hands, OverrideType_t::OVERRIDE_NORMAL);
+			gInts->ModelRender->ForcedMaterialOverride(Hands, OverrideType_t::OVERRIDE_NORMAL);
 		}
 		//else if(pszModelName.find("models/player") != std::string::npos)
 		//{
@@ -333,7 +330,7 @@ void __stdcall CHack::Hooked_DrawModelExecute(void *state, ModelRenderInfo_t &pI
 		//	{
 		//		IMaterial *mats[MAXSTUDIOSKINS];
 
-		//		studiohdr_t *hdr = (studiohdr_t *)gInts.ModelInfo->GetStudiomodel((DWORD *)pInfo.pModel);
+		//		studiohdr_t *hdr = (studiohdr_t *)gInts->ModelInfo->GetStudiomodel((DWORD *)pInfo.pModel);
 
 		//		CEntity<> other{pInfo.entity_index};
 
@@ -344,7 +341,7 @@ void __stdcall CHack::Hooked_DrawModelExecute(void *state, ModelRenderInfo_t &pI
 
 		//		if(other.get<BYTE>(gEntVars.iLifeState) == LIFE_ALIVE)
 		//		{
-		//			gInts.ModelInfo->GetModelMaterials((model_t *)pInfo.pModel, hdr->numtextures, mats);
+		//			gInts->ModelInfo->GetModelMaterials((model_t *)pInfo.pModel, hdr->numtextures, mats);
 
 		//			for(int i = 0; i < hdr->numtextures; i++)
 		//			{
@@ -365,10 +362,10 @@ void __stdcall CHack::Hooked_DrawModelExecute(void *state, ModelRenderInfo_t &pI
 
 		//				col.getFloatArray(baseColor);
 
-		//				gInts.RenderView->SetColorModulation(baseColor);
+		//				gInts->RenderView->SetColorModulation(baseColor);
 		//				// Call to our original DrawModelExecute (we could juat as easily call oDrawModelExecute).
 		//				// We call the original so we can have different colors based on visibility
-		//				hook.GetMethod<void(__thiscall *)(PVOID, void *, ModelRenderInfo_t &, matrix3x4 *)>(19)(gInts.ModelRender, state, pInfo, pCustomBoneToWorld);
+		//				hook.GetMethod<void(__thiscall *)(PVOID, void *, ModelRenderInfo_t &, matrix3x4 *)>(19)(gInts->ModelRender, state, pInfo, pCustomBoneToWorld);
 
 		//				mat->SetMaterialVarFlag(MaterialVarFlags_t::MATERIAL_VAR_IGNOREZ, false);
 		//				mat->SetMaterialVarFlag(MaterialVarFlags_t::MATERIAL_VAR_FLAT, false);
@@ -378,16 +375,16 @@ void __stdcall CHack::Hooked_DrawModelExecute(void *state, ModelRenderInfo_t &pI
 		//				Color col2 = {255, 255, 0};
 
 		//				col2.getFloatArray(baseColor);
-		//				gInts.RenderView->SetColorModulation(baseColor);
+		//				gInts->RenderView->SetColorModulation(baseColor);
 
-		//				hook.GetMethod<void(__thiscall *)(PVOID, void *, ModelRenderInfo_t &, matrix3x4 *)>(19)(gInts.ModelRender, state, pInfo, pCustomBoneToWorld);
+		//				hook.GetMethod<void(__thiscall *)(PVOID, void *, ModelRenderInfo_t &, matrix3x4 *)>(19)(gInts->ModelRender, state, pInfo, pCustomBoneToWorld);
 		//				if(!active)
 		//					active = true;
 		//			}
 		//		}
 		//		else // draw normally
 		//		{
-		//			gInts.ModelInfo->GetModelMaterials((model_t *)pInfo.pModel, hdr->numtextures, mats);
+		//			gInts->ModelInfo->GetModelMaterials((model_t *)pInfo.pModel, hdr->numtextures, mats);
 		//			for(int i = 0; i < hdr->numtextures; i++)
 		//			{
 		//				IMaterial* mat = mats[i];
@@ -410,9 +407,9 @@ exit:
 
 	if(!active)
 	{
-		hook.GetMethod<void(__thiscall *)(PVOID, void *, ModelRenderInfo_t &, matrix3x4 *)>(19)(gInts.ModelRender, state, pInfo, pCustomBoneToWorld);
+		hook.GetMethod<void(__thiscall *)(PVOID, void *, ModelRenderInfo_t &, matrix3x4 *)>(19)(gInts->ModelRender, state, pInfo, pCustomBoneToWorld);
 	}
-	gInts.ModelRender->ForcedMaterialOverride(NULL, OverrideType_t::OVERRIDE_NORMAL);
+	gInts->ModelRender->ForcedMaterialOverride(NULL, OverrideType_t::OVERRIDE_NORMAL);
 }
 
 LRESULT __stdcall CHack::Hooked_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -447,11 +444,11 @@ LRESULT __stdcall CHack::Hooked_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 	{
 
 		int x, y;
-		gInts.Surface->SurfaceGetCursorPos(x, y);
+		gInts->Surface->SurfaceGetCursorPos(x, y);
 		// handle input
 		for(auto &window : gHack.windowArray)
 			window->handleMouseInput(x, y, mb);
 	}
 
-	return CallWindowProc(gInts.oldWindowProc, hWnd, uMsg, wParam, lParam);
+	return CallWindowProc(gInts->oldWindowProc, hWnd, uMsg, wParam, lParam);
 }

@@ -114,11 +114,9 @@ void CAntiaim::processCommand(CUserCmd *pUserCmd)
 		silentMovementFix(pUserCmd, newAngles);
 
 		pUserCmd->viewangles = newAngles;
-		gHack.silentData.view = newAngles;
-
 	}
 		
-	//gInts.Engine->SetViewAngles(pUserCmd->viewangles);
+	//gInts->Engine->SetViewAngles(pUserCmd->viewangles);
 
 	return;
 }

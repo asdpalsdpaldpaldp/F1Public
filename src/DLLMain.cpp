@@ -1,12 +1,10 @@
 #include "SDK.h"
 #include "Panels.h"
 #include "unlinkpeb.h"
-#include "CHackState.h"
 
-// maybe move these out of here and into their respective sections
+// maybe move these out of here and into their respective files
 COffsets gOffsets;
 CHack gHack;
-CInterfaces gInts;
 CPlayerVariables gEntVars;
 playerVars_t gLocalPlayerVars;
 
@@ -25,16 +23,11 @@ BOOL APIENTRY DllMain(HMODULE hInstance, DWORD dwReason, LPVOID lpReserved)
 		#endif
 		Log::Init(hInstance);
 
-		gInts.thisDll = hInstance;
-
-		std::set_terminate(terminateHandler);
-
-		std::set_unexpected(unexpectedHandler);
-
-		SetUnhandledExceptionFilter(unhandledSehExceptionHandler);
+		setHandlers();
 
 		// call our init
-		CreateThread(0, 0, (LPTHREAD_START_ROUTINE)&HState::init, 0, 0, 0);
+		CreateThread(0, 0, (LPTHREAD_START_ROUTINE)&CHack::Init, hInstance, 0, 0);
+
 	}
 	return true;
 }

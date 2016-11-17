@@ -30,20 +30,26 @@ void CMisc::processCommandBeforePred(CUserCmd *pUserCmd)
 		//	return true;
 		//}
 
-		static bool firstjump = 0, fakejmp;
+		//static bool firstjump = 0, fakejmp;
 
-		if( pUserCmd->buttons & IN_JUMP )
-			if( !firstjump )
-				firstjump = fakejmp = 1;
-			else if( !( pLocalEntity->GetFlags() & FL_ONGROUND ) )
-				if( fakejmp )
-					fakejmp = 0;
-				else
-					pUserCmd->buttons &= ~IN_JUMP;
-			else
-				fakejmp = 1;
-		else
-			firstjump = 0;
+		//if( pUserCmd->buttons & IN_JUMP )
+		//	if( !firstjump )
+		//		firstjump = fakejmp = 1;
+		//	else if( !( pLocalEntity->GetFlags() & FL_ONGROUND ) )
+		//		if( fakejmp )
+		//			fakejmp = 0;
+		//		else
+		//			pUserCmd->buttons &= ~IN_JUMP;
+		//	else
+		//		fakejmp = 1;
+		//else
+		//	firstjump = 0;
+
+		if(pUserCmd->buttons & IN_JUMP)
+		{
+			if(!( pLocalEntity->GetFlags() & FL_ONGROUND ))
+				pUserCmd->buttons &= ~IN_JUMP;
+		}
 	}
 
 	if( pLocalEntity->GetFov() != fovChanger->getValue() )
@@ -52,7 +58,7 @@ void CMisc::processCommandBeforePred(CUserCmd *pUserCmd)
 			pLocalEntity->SetFov(fovChanger->getValue());
 	}
 
-	static ConVar *pNoPush = gInts.Cvar->FindVar( "tf_avoidteammates_pushaway" );
+	static ConVar *pNoPush = gInts->Cvar->FindVar( "tf_avoidteammates_pushaway" );
 
 	if( pNoPush != NULL )
 	{

@@ -13,7 +13,7 @@ public:
 	virtual bool RegisterConCommandBase(ConCommandBase *pVar)
 	{
 		Log::Console("Registering ConVar %s", pVar->GetName());
-		gInts.Cvar->RegisterConCommand(pVar);
+		gInts->Cvar->RegisterConCommand(pVar);
 		return true;
 	}
 };
@@ -23,12 +23,12 @@ IConCommandBaseAccessor	*ConCommandBase::s_pAccessor = &s_DefaultAccessor;
 
 void ConVar_Register(int nCVarFlag, IConCommandBaseAccessor *pAccessor)
 {
-	if(!gInts.Cvar.get() || s_bRegistered)
+	if(!gInts->Cvar.get() || s_bRegistered)
 		return;
 
 	s_bRegistered = true;
 	s_nCVarFlag = nCVarFlag;
-	s_nDLLIdentifier = gInts.Cvar->AllocateDLLIdentifier();
+	s_nDLLIdentifier = gInts->Cvar->AllocateDLLIdentifier();
 
 	ConCommandBase *pCur, *pNext;
 

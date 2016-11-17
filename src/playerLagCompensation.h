@@ -18,7 +18,7 @@ public:
 
 #define clamp(a,b,c) ( (a) > (c) ? (c) : ( (a) < (b) ? (b) : (a) ) )
 
-#define TICK_INTERVAL			(gInts.Globals->interval_per_tick)
+#define TICK_INTERVAL			(gInts->Globals->interval_per_tick)
 
 
 #define TIME_TO_TICKS( dt )		( (int)( 0.5f + (float)(dt) / TICK_INTERVAL ) )
@@ -34,7 +34,7 @@ public:
 //
 //	//INetChannelInfo *nci = engine->GetPlayerNetInfo( player->entindex() );
 //
-//	INetChannelInfo *nci = gInts.Engine->GetNetChannelInfo();
+//	INetChannelInfo *nci = gInts->Engine->GetNetChannelInfo();
 //
 //	if( nci )
 //	{
@@ -50,28 +50,28 @@ public:
 //	correct += TICKS_TO_TIME( lerpTicks );
 //
 //	// check bouns [0,sv_maxunlag]
-//	correct = clamp( correct, 0.0f, gInts.Cvar->FindVar( "sv_maxunlag" )->GetFloat() );
+//	correct = clamp( correct, 0.0f, gInts->Cvar->FindVar( "sv_maxunlag" )->GetFloat() );
 //
 //	// correct tick send by player 
 //	int targettick = gLocalPlayerVars.thisCmd->tick_count - lerpTicks;
 //
 //	// calc difference between tick send by player and our latency based tick
-//	float deltaTime = correct - TICKS_TO_TIME( gInts.Globals->tickcount - targettick );
+//	float deltaTime = correct - TICKS_TO_TIME( gInts->Globals->tickcount - targettick );
 //
 //	if( fabs( deltaTime ) > 0.2f )
 //	{
 //		// difference between cmd time and latency is too big > 200ms, use time correction based on latency
 //		// DevMsg("StartLagCompensation: delta too big (%.3f)\n", deltaTime );
-//		targettick = gInts.Globals->tickcount - TIME_TO_TICKS( correct );
+//		targettick = gInts->Globals->tickcount - TIME_TO_TICKS( correct );
 //	}
 //
-//	return gInts.Globals->curtime - TICKS_TO_TIME( targettick );
+//	return gInts->Globals->curtime - TICKS_TO_TIME( targettick );
 //}
 
 inline float GetConstantLerp()
 {
 	// hope that this is the value used
-	static auto *cl_interp = gInts.Cvar->FindVar("cl_interp");
+	static auto *cl_interp = gInts->Cvar->FindVar("cl_interp");
 	return cl_interp->GetFloat();
 }
 
@@ -99,14 +99,14 @@ extern ILagCompensationManager *lagcompensation;
 #define LC_ANIMATION_CHANGED (1<<11)
 
 //static ConVar sv_lagcompensation_teleport_dist( "sv_lagcompensation_teleport_dist", "64", FCVAR_DEVELOPMENTONLY | FCVAR_CHEAT, "How far a player got moved by game code before we can't lag compensate their position back" );
-#define sv_lagcompensation_teleport_dist (gInts.Cvar->FindVar("sv_lagcompensation_teleport_dist"))
+#define sv_lagcompensation_teleport_dist (gInts->Cvar->FindVar("sv_lagcompensation_teleport_dist"))
 #define LAG_COMPENSATION_EPS_SQR ( 0.1f * 0.1f )
 // Allow 4 units of error ( about 1 / 8 bbox width )
 #define LAG_COMPENSATION_ERROR_EPS_SQR ( 4.0f * 4.0f )
 
 //ConVar sv_unlag( "sv_unlag", "1", FCVAR_DEVELOPMENTONLY, "Enables player lag compensation" );
 //ConVar sv_maxunlag( "sv_maxunlag", "1.0", FCVAR_DEVELOPMENTONLY, "Maximum lag compensation in seconds", true, 0.0f, true, 1.0f );
-#define sv_maxunlag (gInts.Cvar->FindVar("sv_maxunlag"))
+#define sv_maxunlag (gInts->Cvar->FindVar("sv_maxunlag"))
 //ConVar sv_lagflushbonecache( "sv_lagflushbonecache", "1", FCVAR_DEVELOPMENTONLY, "Flushes entity bone cache on lag compensation" );
 //ConVar sv_showlagcompensation( "sv_showlagcompensation", "0", FCVAR_CHEAT, "Show lag compensated hitboxes whenever a player is lag compensated." );
 
@@ -338,7 +338,7 @@ ILagCompensationManager *lagcompensation = &g_LagCompensationManager;
 //-----------------------------------------------------------------------------
 void CLagCompensationManager::FrameUpdatePostEntityThink()
 {
-	if( ( gInts.Globals->maxclients <= 1 ) || /*!sv_unlag.GetBool() )
+	if( ( gInts->Globals->maxclients <= 1 ) || /*!sv_unlag.GetBool() )
 	{
 		ClearHistory();
 		return;
@@ -349,12 +349,12 @@ void CLagCompensationManager::FrameUpdatePostEntityThink()
 	//VPROF_BUDGET( "FrameUpdatePostEntityThink", "CLagCompensationManager" );
 
 	// remove all records before that time:
-	int flDeadtime = gInts.Globals->curtime - sv_maxunlag->GetFloat();
+	int flDeadtime = gInts->Globals->curtime - sv_maxunlag->GetFloat();
 
 	// Iterate all active players
-	for( int i = 1; i <= gInts.Globals->maxclients; i++ )
+	for( int i = 1; i <= gInts->Globals->maxclients; i++ )
 	{
-		//CBaseEntity *pPlayer = gInts.EntList->GetClientEntity( i );
+		//CBaseEntity *pPlayer = gInts->EntList->GetClientEntity( i );
 
 		CEntity<> pPlayer{i};
 
@@ -478,7 +478,7 @@ void CLagCompensationManager::StartLagCompensation( CBaseEntity *player, CUserCm
 
 	//INetChannelInfo *nci = engine->GetPlayerNetInfo( player->entindex() );
 
-	INetChannelInfo *nci = gInts.Engine->GetNetChannelInfo();
+	INetChannelInfo *nci = gInts->Engine->GetNetChannelInfo();
 
 	if( nci )
 	{
@@ -500,13 +500,13 @@ void CLagCompensationManager::StartLagCompensation( CBaseEntity *player, CUserCm
 	int targettick = cmd->tick_count - lerpTicks;
 
 	// calc difference between tick send by player and our latency based tick
-	float deltaTime = correct - TICKS_TO_TIME( gInts.Globals->tickcount - targettick );
+	float deltaTime = correct - TICKS_TO_TIME( gInts->Globals->tickcount - targettick );
 
 	if( fabs( deltaTime ) > 0.2f )
 	{
 		// difference between cmd time and latency is too big > 200ms, use time correction based on latency
 		// DevMsg("StartLagCompensation: delta too big (%.3f)\n", deltaTime );
-		targettick = gInts.Globals->tickcount - TIME_TO_TICKS( correct );
+		targettick = gInts->Globals->tickcount - TIME_TO_TICKS( correct );
 	}
 
 	// Iterate all active players

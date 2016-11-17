@@ -69,7 +69,7 @@ void CTrigger::processCommand(CUserCmd *pUserCmd)
 
 	filt.SetIgnoreEntity(local.castToPointer<CBaseEntity>());
 
-	gInts.EngineTrace->TraceRay(ray, MASK_AIMBOT | CONTENTS_HITBOX, &filt, &trace); // 0x4200400B
+	gInts->EngineTrace->TraceRay(ray, MASK_AIMBOT | CONTENTS_HITBOX, &filt, &trace); // 0x4200400B
 
 	if(!trace.m_pEnt)
 		return;

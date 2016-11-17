@@ -37,12 +37,12 @@ void CBackstab::processCommandBeforePred(CUserCmd *pUserCmd)
 	{
 		// TODO fixme
 
-		//gInts.LagCompensation->StartLagCompensation( localPlayer.castToPointer<CBaseEntity>(), pUserCmd );
+		//gInts->LagCompensation->StartLagCompensation( localPlayer.castToPointer<CBaseEntity>(), pUserCmd );
 
 		if(!canBackstab( pBaseCombatWeapon, pLocalEntity))
 			return;
 
-		//gInts.LagCompensation->FinishLagCompensation( localPlayer.castToPointer<CBaseEntity>() );
+		//gInts->LagCompensation->FinishLagCompensation( localPlayer.castToPointer<CBaseEntity>() );
 
 		pUserCmd->buttons |= IN_ATTACK;
 	}
@@ -170,7 +170,7 @@ bool CBackstab::engineCanBackstab(CBaseCombatWeapon *weapon, CBaseEntity *target
 	if(!weapon || !target)
 		return false;
 
-	CUtilMove::safeRunSimulation(gInts.Prediction.get(), target);
+	CUtilMove::safeRunSimulation(gInts->Prediction.get(), target);
 
 	bool r = backstab(weapon, target);
 

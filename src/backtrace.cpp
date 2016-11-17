@@ -2,6 +2,7 @@
 
 #include "CHack.h"
 
+#ifdef _TRYCATCH
 void sehTranslator(unsigned int code, EXCEPTION_POINTERS *e)
 {
 	// create a new exception base off of these and then throw it.
@@ -38,3 +39,4 @@ LONG WINAPI unhandledSehExceptionHandler(EXCEPTION_POINTERS *e)
 	Log::Error("An SEH exception\n(name: %s | id=0x%X)\nwas left UNCAUGHT!", "UNKNOWN", e->ExceptionRecord->ExceptionCode);
 	return 0;
 }
+#endif

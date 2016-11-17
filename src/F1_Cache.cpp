@@ -59,7 +59,7 @@ Vector F1_GlobalCache::getHitboxPosition(int index, tf_hitbox hb, bool recalc)
 			if(!model)
 				return oldHB.position;
 
-			PDWORD pStudioHdr = gInts.ModelInfo->GetStudiomodel(model);
+			PDWORD pStudioHdr = gInts->ModelInfo->GetStudiomodel(model);
 
 			if(!pStudioHdr)
 				return oldHB.position;
@@ -75,7 +75,7 @@ Vector F1_GlobalCache::getHitboxPosition(int index, tf_hitbox hb, bool recalc)
 			{
 				if(bCache.isValid == false)
 				{
-					if(pBaseEntity->SetupBones(bonesCache[index].BoneToWorld, 128, 0x100, gInts.Globals->curtime) == false)
+					if(pBaseEntity->SetupBones(bonesCache[index].BoneToWorld, 128, 0x100, gInts->Globals->curtime) == false)
 					{ /*do nothing thanks*/ }
 
 					bCache.isValid = true;

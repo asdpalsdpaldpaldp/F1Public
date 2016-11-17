@@ -24,6 +24,12 @@ public:
 	EXCEPTION_POINTERS *exceptPtrs;
 };
 
+//#define _TRYCATCH
+
+// stuff for try and catch
+// ugly but could improve speed later on
+#ifdef _TRYCATCH
+
 // defined in the cpp
 void sehTranslator(unsigned int code, EXCEPTION_POINTERS *e);
 
@@ -33,11 +39,15 @@ void unexpectedHandler();
 
 LONG WINAPI unhandledSehExceptionHandler(EXCEPTION_POINTERS *e);
 
-#define _TRYCATCH
+void setHandlers()
+{
+	std::set_terminate(terminateHandler);
 
-// stuff for try and catch
-// ugly but could improve speed later on
-#ifdef _TRYCATCH
+	std::set_unexpected(unexpectedHandler);
+
+	SetUnhandledExceptionFilter(unhandledSehExceptionHandler);
+}
+
 #define _TRY try
 #undef _CATCH // undefine this _CATCH
 #define _CATCH catch(...)
@@ -49,11 +59,17 @@ LONG WINAPI unhandledSehExceptionHandler(EXCEPTION_POINTERS *e);
 #else
 // dont enable these (maybe compiling on clang???)
 #define _TRY
-#define _CLOSE
-#define _CATCH
-#define _CATCH_SEH
+#undef _CATCH
+#define _CATCH if(0)
+#define _CATCH_SEH if(0)
 #define _CATCH_SEH_REPORT_ERROR(Class, funcName)
 #define _INSTALL_SEH_TRANSLATOR()
+
+#define sehTranslator(code, e)
+#define terminateHandler()
+#define unexpectedHandler()
+#define unhandledSehExceptionHandler()
+#define setHandlers()
 
 #endif
 

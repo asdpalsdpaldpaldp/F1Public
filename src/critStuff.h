@@ -128,7 +128,7 @@ const bool CTF2CritHelper::tf_weapon_criticals_nopred		  = true;
 CTF2CritHelper::CTF2CritHelper()
 	: local(me), localWeapon(HANDLE2INDEX(local.get<CHandle>(gEntVars.hActiveWeapon))), data(localWeapon->GetWeaponData()),
 	  // TODO fixme
-	  bIsMelee(vars.wpn->hit == HIT_MELEE), bStreamCrits(data.m_bUseRapidFireCrits), curtime(gInts.Globals->curtime)
+	  bIsMelee(vars.wpn->hit == HIT_MELEE), bStreamCrits(data.m_bUseRapidFireCrits), curtime(gInts->Globals->curtime)
 {
 }
 void CTF2CritHelper::Setup(int seqnr)
@@ -174,7 +174,7 @@ bool CTF2CritHelper::IsCrit(iscrit_t &crit)
 			crit = ISCRIT_REUSED_SEED;
 			return false;
 		}
-		gInts.RandomStream->SetSeed(iRandomSeed);
+		gInts->RandomStream->SetSeed(iRandomSeed);
 
 		// Game does some logic with local->m_iNextMeleeCrit (NETVAR)
 		// int iNextMeleeCrit = local->iNextMeleeCrit();
@@ -189,7 +189,7 @@ bool CTF2CritHelper::IsCrit(iscrit_t &crit)
 
 		stats.iNumAttacks++;
 
-		bool result = static_cast<float>(gInts.RandomStream->RandomInt(0, 9999)) <= (flCritMult * 10000.0f);
+		bool result = static_cast<float>(gInts->RandomStream->RandomInt(0, 9999)) <= (flCritMult * 10000.0f);
 
 		if(result && !BlowCritBucket(flDamage))
 		{
@@ -253,9 +253,9 @@ bool CTF2CritHelper::IsCrit(iscrit_t &crit)
 				crit = ISCRIT_REUSED_SEED;
 				return false;
 			}
-			gInts.RandomStream->SetSeed(iRandomSeed);
+			gInts->RandomStream->SetSeed(iRandomSeed);
 
-			result = static_cast<float>(gInts.RandomStream->RandomInt(0, 9999)) <= (flCritMult * 10000.0f);
+			result = static_cast<float>(gInts->RandomStream->RandomInt(0, 9999)) <= (flCritMult * 10000.0f);
 		}
 		else
 		{
@@ -268,9 +268,9 @@ bool CTF2CritHelper::IsCrit(iscrit_t &crit)
 				crit = ISCRIT_REUSED_SEED;
 				return false;
 			}
-			gInts.RandomStream->SetSeed(iRandomSeed);
+			gInts->RandomStream->SetSeed(iRandomSeed);
 
-			result = static_cast<float>(gInts.RandomStream->RandomInt(0, 9999)) < (flCritMult * 10000.0f);
+			result = static_cast<float>(gInts->RandomStream->RandomInt(0, 9999)) < (flCritMult * 10000.0f);
 		}
 
 		if(getmember<bool>(gpGame->pPrediction, 9))

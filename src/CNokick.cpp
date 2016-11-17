@@ -23,7 +23,7 @@ void __fastcall Hooked_EmitSound(PVOID pSound, int edx, IRecipientFilter &filter
 
 	// call the original function
 	// not calling it causes wierd effects
-	auto &hook = VMTManager::GetHook(gInts.SoundEngine);
+	auto &hook = VMTManager::GetHook(gInts->SoundEngine);
 	hook.GetMethod<EmitSoundFn>(gOffsets.emitSound)(pSound, filter, iEntIndex, iChannel, pSample, flVolume,
 													flAttenuation, iFlags, iPitch, iSpecialDSP, pOrigin, pDirection, pUtlVecOrigins,
 													bUpdatePositions, soundtime, speakerentity);
@@ -46,35 +46,35 @@ CNokick::CNokick()
 void CNokick::init()
 {
 	//playSoundHook = new VMTBaseManager();
-	//playSoundHook->Init(gInts.Surface);
+	//playSoundHook->Init(gInts->Surface);
 	//playSoundHook->HookMethod(&Hooked_PlaySound, gOffsets.playSound);
 	//playSoundHook->Rehook();
 
 	//emitSoundHook = new VMTBaseManager();
-	//emitSoundHook->Init(gInts.SoundEngine);
+	//emitSoundHook->Init(gInts->SoundEngine);
 	//emitSoundHook->HookMethod(&Hooked_EmitSound, gOffsets.emitSound);
 	//emitSoundHook->Rehook();
 
-	//gHookManager.hookMethod(gInts.Surface, gOffsets.playSound, &Hooked_PlaySound);
-	gHookManager.hookMethod(gInts.Surface, gOffsets.playSound, &Hooked_PlaySound);
-	gHookManager.hookMethod(gInts.SoundEngine, gOffsets.emitSound, &Hooked_EmitSound);
+	//gHookManager.hookMethod(gInts->Surface, gOffsets.playSound, &Hooked_PlaySound);
+	gHookManager.hookMethod(gInts->Surface, gOffsets.playSound, &Hooked_PlaySound);
+	gHookManager.hookMethod(gInts->SoundEngine, gOffsets.emitSound, &Hooked_EmitSound);
 
-	gHookManager.hookMethod(gInts.Client, gOffsets.dispatchUserMessageOffset, &Hooked_UserDispatchMessage);
+	gHookManager.hookMethod(gInts->Client, gOffsets.dispatchUserMessageOffset, &Hooked_UserDispatchMessage);
 
 	return;
 }
 
 DWORD WINAPI disconnectRetry(LPVOID arg)
 {
-	gInts.Engine->ClientCmd_Unrestricted("disconnect");
-	gInts.Cvar->ConsolePrintf("====================================\nRECONNECTING IN 10 SECONDS\n====================================\n");
+	gInts->Engine->ClientCmd_Unrestricted("disconnect");
+	gInts->Cvar->ConsolePrintf("====================================\nRECONNECTING IN 10 SECONDS\n====================================\n");
 	Sleep(15000);
-	gInts.Engine->ClientCmd_Unrestricted("retry");
+	gInts->Engine->ClientCmd_Unrestricted("retry");
 
 	return 0;
 	//while(true)
 	//{
-	//	if(!gInts.Engine->IsConnected())
+	//	if(!gInts->Engine->IsConnected())
 	//	{
 	//		endTime = std::clock();
 
@@ -119,12 +119,12 @@ bool CNokick::userMessage(int type, bf_read &data)
 	{
 	// Intercept other messages...
 	case 45: // CallVoteFailed
-		gInts.Cvar->ConsoleColorPrintf(c, "--> CALL VOTE FAILED\n");
+		gInts->Cvar->ConsoleColorPrintf(c, "--> CALL VOTE FAILED\n");
 		break;
 
 	case 46: // VoteStart
 
-		gInts.Cvar->ConsoleColorPrintf(c, "--> VOTE START\n");
+		gInts->Cvar->ConsoleColorPrintf(c, "--> VOTE START\n");
 
 		team	  = data.ReadByte();
 		initiator = data.ReadByte();
@@ -154,7 +154,7 @@ bool CNokick::userMessage(int type, bf_read &data)
 		break;
 	case 47: // VotePass
 
-		gInts.Cvar->ConsoleColorPrintf(c, "--> VOTE PASS!\n");
+		gInts->Cvar->ConsoleColorPrintf(c, "--> VOTE PASS!\n");
 
 		voteKick = false;
 
@@ -173,14 +173,14 @@ bool CNokick::userMessage(int type, bf_read &data)
 			{
 				// we need to use execure client cmd in order to get it to execute instantly
 				Log::Console("--> retry now!!");
-				gInts.Engine->ExecuteClientCmd("retry");
+				gInts->Engine->ExecuteClientCmd("retry");
 			}
 		}
 
 		break;
 
 	case 48: // VoteFailed
-		gInts.Cvar->ConsoleColorPrintf(c, "--> VOTE FAILED!\n");
+		gInts->Cvar->ConsoleColorPrintf(c, "--> VOTE FAILED!\n");
 
 		voteKick = false;
 
@@ -208,14 +208,14 @@ bool CNokick::emitSound(const char *sound)
 
 			if(len > 4)
 			{
-				gInts.Cvar->ConsoleColorPrintf(Color{255, 0, 0, 255}, "--> SOUND: %s\n", sound);
+				gInts->Cvar->ConsoleColorPrintf(Color{255, 0, 0, 255}, "--> SOUND: %s\n", sound);
 
 				// we dont hear this if we are being kicked
 				if(strstr(sound, "vote_success.wav")) // vote_success.wav
 				{
 					// vote passed - we're probably screwed anyway, but it cant hurt not to try.
 					voteKick = false;
-					// gInts.Engine->ExecuteClientCmd("retry");
+					// gInts->Engine->ExecuteClientCmd("retry");
 					CreateThread(0, 0, disconnectRetry, 0, 0, 0);
 				}
 				else if(strstr(sound, "vote_yes.wav")) // vote_yes.wav
@@ -243,7 +243,7 @@ int CNokick::getNumOfPlayers()
 {
 	int ret = 0;
 
-	for(int i = 0; i < gInts.EntList->GetHighestEntityIndex(); i++)
+	for(int i = 0; i < gInts->EntList->GetHighestEntityIndex(); i++)
 	{
 		CEntity<> ent{i};
 
@@ -259,7 +259,7 @@ int CNokick::getNumOfPlayers()
 			ret++;
 	}
 
-	gInts.Cvar->ConsoleColorPrintf(Color{255, 0, 0, 255}, "--> WE HAVE GOT %d PLAYERS ON OUR TEAM\n", ret);
+	gInts->Cvar->ConsoleColorPrintf(Color{255, 0, 0, 255}, "--> WE HAVE GOT %d PLAYERS ON OUR TEAM\n", ret);
 
 	return ret;
 }
@@ -270,6 +270,6 @@ void CNokick::playSound(const char *soundName)
 	Log::Console("Playsound with sound %s", soundName);
 
 	typedef void(__thiscall * OriginalFn)(PVOID, const char *);
-	auto &hook = VMTManager::GetHook(gInts.Surface);
-	return hook.GetMethod<OriginalFn>(gOffsets.playSound)(gInts.Surface, soundName);
+	auto &hook = VMTManager::GetHook(gInts->Surface);
+	return hook.GetMethod<OriginalFn>(gOffsets.playSound)(gInts->Surface, soundName);
 }

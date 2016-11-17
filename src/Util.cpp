@@ -3,7 +3,7 @@
 int GetNumHitboxes(CBaseEntity *ent)
 {
 	auto *model = ent->GetModel();
-	auto *pHeader = gInts.ModelInfo->GetStudiomodel(model);
+	auto *pHeader = gInts->ModelInfo->GetStudiomodel(model);
 	int HitboxSetIndex = *( int * ) ( ( DWORD ) pHeader + 0xB0 );
 	mstudiohitboxset_t *pSet = ( mstudiohitboxset_t * ) ( ( ( PBYTE ) pHeader ) + HitboxSetIndex );
 	return pSet->numhitboxes;
@@ -21,6 +21,6 @@ bool CUtil::isPlayer( CBaseEntity *pBaseEntity )
 F1_Point CUtil::getMousePos()
 {
 	F1_Point xy{ 0,0 };
-	gInts.Surface->SurfaceGetCursorPos( xy.x, xy.y );
+	gInts->Surface->SurfaceGetCursorPos( xy.x, xy.y );
 	return xy;
 }

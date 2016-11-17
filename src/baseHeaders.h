@@ -130,8 +130,8 @@ inline void quickCrash()
 	*(int *)x = 10;
 }
 //===================================================================================================
-#define me gInts.Engine->GetLocalPlayer()
-#define GetBaseEntity(x) gInts.EntList->GetClientEntity(x)
+#define me gInts->Engine->GetLocalPlayer()
+#define GetBaseEntity(x) gInts->EntList->GetClientEntity(x)
 #define MASK_AIMBOT 0x200400B
 #define CONTENTS_HITBOX 0x40000000
 #define CASUAL_HACKER_MASK 0x4600400B

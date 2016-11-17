@@ -11,7 +11,7 @@ DEFINE_RECURSE_CALL_FUNCTION_2_ARG( _menuUpdate, F1_IConVar **, int & );
 void F1_MenuListing::render()
 {
 	F1_Point mouseXY;
-	gInts.Surface->SurfaceGetCursorPos( mouseXY.x, mouseXY.y );
+	gInts->Surface->SurfaceGetCursorPos( mouseXY.x, mouseXY.y );
 
 	F1_Point xy = getPos();
 
@@ -201,7 +201,7 @@ void F1_Menu::render()
 	{
 		int x, y;
 
-		gInts.Surface->SurfaceGetCursorPos( x, y );
+		gInts->Surface->SurfaceGetCursorPos( x, y );
 
 		gDrawManager.DrawRect( x - 6, y - 6, 6, 6, gDrawManager.dwGetTeamColor( CEntity<>{me}.get<int>( gEntVars.iTeam ) ) );
 	}

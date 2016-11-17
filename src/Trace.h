@@ -86,7 +86,7 @@ enum class hitgroup : int
 //	virtual DWORD GetRefEHandle(void) = 0;
 //	CBaseEntity *GetEntity(void)
 //	{
-//		return gInts.EntList->GetClientEntity(((*(PINT)(GetRefEHandle())) & ((1 << (11 + 1)) - 1)));
+//		return gInts->EntList->GetClientEntity(((*(PINT)(GetRefEHandle())) & ((1 << (11 + 1)) - 1)));
 //	}
 //};
 
@@ -114,7 +114,7 @@ static CBaseEntity *GetEntity(IHandleEntity *e)
 //			Log::Console( "CFuncRespawnRoomVisualizer id: %i", pBaseEntity->GetClientClass( )->iClassID );
 //			return false;
 //		}
-//		if ( pBaseEntity->GetIndex( ) == gInts.Engine->GetLocalPlayer( ) )
+//		if ( pBaseEntity->GetIndex( ) == gInts->Engine->GetLocalPlayer( ) )
 //		{
 //			return false;
 //		}

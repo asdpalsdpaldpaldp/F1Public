@@ -27,9 +27,9 @@ void CAutoAirblast::processCommand(CUserCmd *pUserCmd)
 		{
 			if(gTargetHelper.tryBecomeOwner(targetHelperKey) )
 			{
-				gTargetHelper.setValidTargetFn( targetHelperKey, [this]( int index ) -> bool { return this->isValidTarget( index ); } );
-				gTargetHelper.setVisibleTargetFn( targetHelperKey, [this]( int index, Vector &t ) -> bool { return this->isVisibleTarget( index, t ); } );
-				gTargetHelper.setCompareTarget( targetHelperKey, [ ]( const CTarget &b, const CTarget &n ) -> bool
+				gTargetHelper.setValidTargetFn( targetHelperKey, [this]( CBaseEntity *ent ) -> bool { return this->isValidTarget( ent->GetIndex() ); } );
+				gTargetHelper.setVisibleTargetFn( targetHelperKey, [this]( CBaseEntity *ent, Vector &t ) -> bool { return this->isVisibleTarget( ent->GetIndex(), t ); } );
+				gTargetHelper.setCompareTargetFn( targetHelperKey, [ ]( const CTarget &b, const CTarget &n ) -> bool
 				{
 					// doesnt really matter as once one is within range, we will airblast
 					if( __CTargetHelper::getDistanceToVector( b.target ) < __CTargetHelper::getDistanceToVector( n.target ) )
@@ -37,6 +37,7 @@ void CAutoAirblast::processCommand(CUserCmd *pUserCmd)
 
 					return true;
 				} );
+				gTargetHelper.setCompareLocationFn(targetHelperKey, [](CBaseEntity *ent) -> Vector { Vector v;  ent->GetWorldSpaceCenter(v); return v; });
 
 				oneTime = true;
 			}
@@ -132,11 +133,11 @@ bool CAutoAirblast::isVisibleTarget( int index, Vector &t )
 
 	Vector eyePos = GetBaseEntity(me)->GetAbsOrigin() + gLocalPlayerVars.viewOffset;
 
-	float latency = gInts.Engine->GetNetChannelInfo()->GetLatency( FLOW_INCOMING ) + gInts.Engine->GetNetChannelInfo()->GetLatency( FLOW_OUTGOING );
+	float latency = gInts->Engine->GetNetChannelInfo()->GetLatency( FLOW_INCOMING ) + gInts->Engine->GetNetChannelInfo()->GetLatency( FLOW_OUTGOING );
 
 	Vector target = origin + ( vel * latency );
 
-	//gInts.DebugOverlay->AddEntityTextOverlay( index, 0, 1, 255, 255, 255, 255, "%f", ::getDistanceToVector( target ) );
+	//gInts->DebugOverlay->AddEntityTextOverlay( index, 0, 1, 255, 255, 255, 255, "%f", ::getDistanceToVector( target ) );
 
 	float length = ( target - eyePos ).Length();
 

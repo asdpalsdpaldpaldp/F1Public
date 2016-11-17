@@ -34,16 +34,16 @@ void CAntiSmac::init()
 	// hook the stuff
 	//clientStateHook = new VMTBaseManager();
 	//// hook and manually say that there are 28 vfuncs in the table
-	//clientStateHook->Init(gInts.ClientState, 0x8);
+	//clientStateHook->Init(gInts->ClientState, 0x8);
 	//clientStateHook->HookMethod(&Hooked_ProcessGetCvarValue, gOffsets.processGetCvarValue);
 	//clientStateHook->HookMethod(&Hooked_ProcessSetConVar, gOffsets.processSetConVar);
 	//clientStateHook->Rehook();
 
-	gHookManager.hookMethod(gInts.ClientState.get(), gOffsets.processGetCvarValue, &Hooked_ProcessGetCvarValue, 0x8);
-	gHookManager.hookMethod(gInts.ClientState.get(), gOffsets.processSetConVar, &Hooked_ProcessSetConVar, 0x8);
+	gHookManager.hookMethod(gInts->ClientState.get(), gOffsets.processGetCvarValue, &Hooked_ProcessGetCvarValue, 0x8);
+	gHookManager.hookMethod(gInts->ClientState.get(), gOffsets.processSetConVar, &Hooked_ProcessSetConVar, 0x8);
 
 	// open this file for reading
-	auto handle = gFileManager.open(getPathForDll(gInts.thisDll) + "..\\config\\CAntiSmac.txt", std::ios::in);
+	auto handle = gFileManager.open(getPathForDll(gInts->thisDll) + "..\\config\\CAntiSmac.txt", std::ios::in);
 
 	if( handle == CFileManager::invalidHandle )
 		Log::Console( "unable to get CAntiSmac.txt config file" );
@@ -53,7 +53,7 @@ void CAntiSmac::init()
 	// tokenize this file when we start
 	cvarList = gFileManager.TokenFile(handle, ':');
 
-	//nameVar = gInts.Cvar->FindVar("name");
+	//nameVar = gInts->Cvar->FindVar("name");
 
 	//nameVar->m_fnChangeCallback = nullptr;
 
@@ -78,7 +78,7 @@ void CAntiSmac::processCommand(CUserCmd *pUserCmd)
 	}
 	else
 	{
-		gLocalPlayerVars.name = gInts.steam.friends->GetPersonaName();
+		gLocalPlayerVars.name = gInts->steam.friends->GetPersonaName();
 	}
 
 	return;
@@ -135,7 +135,7 @@ bool CAntiSmac::processGetCvarValue(SVC_GetCvarValue *msg)
 		Log::Console("{CVAR}	unable to return a value for %s: getting it!!", msg->m_szCvarName);
 
 		// Does any ConCommand exist with this name?
-		auto pVar = gInts.Cvar->FindVar(msg->m_szCvarName);
+		auto pVar = gInts->Cvar->FindVar(msg->m_szCvarName);
 		if(pVar)
 		{
 			if(pVar->m_nFlags & (int)ConvarFlags::FCVAR_SERVER_CANNOT_QUERY)
@@ -172,7 +172,7 @@ bool CAntiSmac::processGetCvarValue(SVC_GetCvarValue *msg)
 	Log::Console("{CVAR} ending getCvarValue for %s by returning '%s'", returnMsg.m_szCvarName, returnMsg.m_szCvarValue);
 
 	// send back via clientstate netchannel
-	gInts.Engine->GetNetChannelInfo()->SendNetMsg(returnMsg);
+	gInts->Engine->GetNetChannelInfo()->SendNetMsg(returnMsg);
 
 	return true;
 }
@@ -181,7 +181,7 @@ bool CAntiSmac::processSetConVar(NET_SetConVar *msg)
 {
 	#if _MSC_VER == 1900
 	// Never process on local client, since the ConVar is directly linked here
-	if(gInts.Engine->GetNetChannelInfo()->IsLoopback())
+	if(gInts->Engine->GetNetChannelInfo()->IsLoopback())
 		return true;
 
 	bool changed = false;
@@ -213,7 +213,7 @@ bool CAntiSmac::processSetConVar(NET_SetConVar *msg)
 bool CAntiSmac::processStringCmd(NET_StringCmd *msg)
 {
 	Log::Console("'%s': '%s'", msg->GetName(), msg->m_szCommand);
-	return gInts.ClientState->ProcessStringCmd(msg);
+	return gInts->ClientState->ProcessStringCmd(msg);
 }
 
 void CAntiSmac::menuUpdate( F1_IConVar ** menuArray, int & currIndex )

@@ -62,8 +62,8 @@ public:
 			tall_		  = tall;
 			weight_		= weight;
 			flags_		 = flags;
-			font = gInts.Surface->CreateFont();
-			gInts.Surface->SetFontGlyphSet(font, windowsFontName.c_str(), tall, weight, 0, 0, flags);
+			font = gInts->Surface->CreateFont();
+			gInts->Surface->SetFontGlyphSet(font, windowsFontName.c_str(), tall, weight, 0, 0, flags);
 		}
 	};
 

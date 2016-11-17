@@ -8,12 +8,12 @@ CDrawManager gDrawManager;
 //===================================================================================
 void CDrawManager::Initialize()
 {
-	if(gInts.Surface == nullptr)
+	if(gInts->Surface == nullptr)
 		return;
 
 	std::setlocale(LC_ALL, "en_US");
 
-	gInts.Engine->GetScreenSize(gScreenSize.iScreenWidth, gScreenSize.iScreenHeight);
+	gInts->Engine->GetScreenSize(gScreenSize.iScreenWidth, gScreenSize.iScreenHeight);
 
 	font_t font;
 
@@ -32,10 +32,10 @@ void CDrawManager::Initialize()
 //	if ( pszText == NULL )
 //		return;
 //
-//	gInts.Surface->DrawSetTextPos( x, y );
-//	gInts.Surface->DrawSetTextFont( m_Font );
-//	gInts.Surface->DrawSetTextColor( RED( dwColor ), GREEN( dwColor ), BLUE( dwColor ), ALPHA( dwColor ) );
-//	gInts.Surface->DrawPrintText( pszText, wcslen( pszText ) );
+//	gInts->Surface->DrawSetTextPos( x, y );
+//	gInts->Surface->DrawSetTextFont( m_Font );
+//	gInts->Surface->DrawSetTextColor( RED( dwColor ), GREEN( dwColor ), BLUE( dwColor ), ALPHA( dwColor ) );
+//	gInts->Surface->DrawPrintText( pszText, wcslen( pszText ) );
 //}
 ////===================================================================================
 //void CDrawManager::DrawString( int x, int y, DWORD dwColor, const char *pszText, ... )
@@ -53,10 +53,10 @@ void CDrawManager::Initialize()
 //
 //	wsprintfW( szString, L"%S", szBuffer );
 //
-//	gInts.Surface->DrawSetTextPos( x, y );
-//	gInts.Surface->DrawSetTextFont( m_Font );
-//	gInts.Surface->DrawSetTextColor( RED( dwColor ), GREEN( dwColor ), BLUE( dwColor ), ALPHA( dwColor ) );
-//	gInts.Surface->DrawPrintText( szString, wcslen( szString ) );
+//	gInts->Surface->DrawSetTextPos( x, y );
+//	gInts->Surface->DrawSetTextFont( m_Font );
+//	gInts->Surface->DrawSetTextColor( RED( dwColor ), GREEN( dwColor ), BLUE( dwColor ), ALPHA( dwColor ) );
+//	gInts->Surface->DrawPrintText( szString, wcslen( szString ) );
 //}
 //void CDrawManager::DrawString( font_t font, int x, int y, DWORD dwColor, const char *pszText, ... )
 //{
@@ -73,10 +73,10 @@ void CDrawManager::Initialize()
 //
 //	wsprintfW( szString, L"%S", szBuffer );
 //
-//	gInts.Surface->DrawSetTextPos( x, y );
-//	gInts.Surface->DrawSetTextFont( font.font );
-//	gInts.Surface->DrawSetTextColor( RED( dwColor ), GREEN( dwColor ), BLUE( dwColor ), ALPHA( dwColor ) );
-//	gInts.Surface->DrawPrintText( szString, wcslen( szString ) );
+//	gInts->Surface->DrawSetTextPos( x, y );
+//	gInts->Surface->DrawSetTextFont( font.font );
+//	gInts->Surface->DrawSetTextColor( RED( dwColor ), GREEN( dwColor ), BLUE( dwColor ), ALPHA( dwColor ) );
+//	gInts->Surface->DrawPrintText( szString, wcslen( szString ) );
 //}
 void CDrawManager::DrawString(const char *fontName, int x, int y, DWORD dwColor, const char *pszText, ...)
 {
@@ -93,10 +93,10 @@ void CDrawManager::DrawString(const char *fontName, int x, int y, DWORD dwColor,
 
 	wsprintfW(szString, L"%S", szBuffer);
 
-	gInts.Surface->DrawSetTextPos(x, y);
-	gInts.Surface->DrawSetTextFont(fonts[fontName].font);
-	gInts.Surface->DrawSetTextColor(RED(dwColor), GREEN(dwColor), BLUE(dwColor), ALPHA(dwColor));
-	gInts.Surface->DrawPrintText(szString, wcslen(szString));
+	gInts->Surface->DrawSetTextPos(x, y);
+	gInts->Surface->DrawSetTextFont(fonts[fontName].font);
+	gInts->Surface->DrawSetTextColor(RED(dwColor), GREEN(dwColor), BLUE(dwColor), ALPHA(dwColor));
+	gInts->Surface->DrawPrintText(szString, wcslen(szString));
 }
 //===================================================================================
 BYTE CDrawManager::GetESPHeight()
@@ -116,7 +116,7 @@ CDrawManager::font_size_t CDrawManager::GetPixelTextSize(const char *fontName, c
 
 	wsprintfW(buffer, L"%s", pszText);
 
-	gInts.Surface->GetTextSize(fonts[fontName].font, buffer, temp.length, temp.height);
+	gInts->Surface->GetTextSize(fonts[fontName].font, buffer, temp.length, temp.height);
 
 	//temp.length *= 1.1f;
 
@@ -125,20 +125,20 @@ CDrawManager::font_size_t CDrawManager::GetPixelTextSize(const char *fontName, c
 //===================================================================================
 void CDrawManager::DrawRect(int x, int y, int w, int h, DWORD dwColor)
 {
-	gInts.Surface->DrawSetColor(RED(dwColor), GREEN(dwColor), BLUE(dwColor), ALPHA(dwColor));
-	gInts.Surface->DrawFilledRect(x, y, x + w, y + h);
+	gInts->Surface->DrawSetColor(RED(dwColor), GREEN(dwColor), BLUE(dwColor), ALPHA(dwColor));
+	gInts->Surface->DrawFilledRect(x, y, x + w, y + h);
 }
 //===================================================================================
 void CDrawManager::OutlineRect(int x, int y, int w, int h, DWORD dwColor)
 {
-	gInts.Surface->DrawSetColor(RED(dwColor), GREEN(dwColor), BLUE(dwColor), ALPHA(dwColor));
-	gInts.Surface->DrawOutlinedRect(x, y, x + w, y + h);
+	gInts->Surface->DrawSetColor(RED(dwColor), GREEN(dwColor), BLUE(dwColor), ALPHA(dwColor));
+	gInts->Surface->DrawOutlinedRect(x, y, x + w, y + h);
 }
 //===================================================================================
 void CDrawManager::DrawCircle(int x, int y, int radius, int segments, DWORD dwColor)
 {
-	gInts.Surface->DrawSetColor(RED(dwColor), GREEN(dwColor), BLUE(dwColor), ALPHA(dwColor));
-	gInts.Surface->DrawOutlinedCircle(x, y, radius, segments);
+	gInts->Surface->DrawSetColor(RED(dwColor), GREEN(dwColor), BLUE(dwColor), ALPHA(dwColor));
+	gInts->Surface->DrawOutlinedCircle(x, y, radius, segments);
 }
 //===================================================================================
 void CDrawManager::DrawBox(Vector vOrigin, int r, int g, int b, int alpha, int box_width, int radius)
@@ -265,10 +265,10 @@ bool CDrawManager::WorldToScreen(Vector &vOrigin, Vector &vScreen)
 
 	if( gScreenSize.iScreenHeight == 0  || gScreenSize.iScreenWidth == 0)
 	{
-		gInts.Engine->GetScreenSize( gScreenSize.iScreenWidth, gScreenSize.iScreenHeight );
+		gInts->Engine->GetScreenSize( gScreenSize.iScreenWidth, gScreenSize.iScreenHeight );
 	}
 
-	const matrix3x4 &worldToScreen = gInts.Engine->WorldToScreenMatrix(); //Grab the world to screen matrix from CEngineClient::WorldToScreenMatrix
+	const matrix3x4 &worldToScreen = gInts->Engine->WorldToScreenMatrix(); //Grab the world to screen matrix from CEngineClient::WorldToScreenMatrix
 
 	float w   = worldToScreen[3][0] * vOrigin[0] + worldToScreen[3][1] * vOrigin[1] + worldToScreen[3][2] * vOrigin[2] + worldToScreen[3][3]; //Calculate the angle in compareson to the player's camera.
 	vScreen.z = 0;																															  //Screen doesn't have a 3rd dimension.
@@ -283,7 +283,7 @@ bool CDrawManager::WorldToScreen(Vector &vOrigin, Vector &vScreen)
 
 	return false;
 
-	//return gInts.DebugOverlay->ScreenPosition( vOrigin, vScreen );
+	//return gInts->DebugOverlay->ScreenPosition( vOrigin, vScreen );
 }
 //===================================================================================
 CDrawManager::font_t CDrawManager::getFont(const char *windowsFontName)
@@ -301,6 +301,6 @@ void CDrawManager::addFont(font_t font)
 //===================================================================================
 void CDrawManager::drawLine(int startx, int starty, int endx, int endy, DWORD color)
 {
-	gInts.Surface->DrawSetColor(RED(color), GREEN(color), BLUE(color), ALPHA(color));
-	gInts.Surface->DrawLine(startx, starty, endx, endy);
+	gInts->Surface->DrawSetColor(RED(color), GREEN(color), BLUE(color), ALPHA(color));
+	gInts->Surface->DrawLine(startx, starty, endx, endy);
 }

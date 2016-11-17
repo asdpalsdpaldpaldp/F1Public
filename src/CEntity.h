@@ -11,7 +11,7 @@ class __declspec( deprecated( "WARNING: CEntity<> is deprecated in favor of CBas
 
 	inline T *getEnt()
 	{
-		return reinterpret_cast<T *>(gInts.EntList->GetClientEntity(ent));
+		return reinterpret_cast<T *>(gInts->EntList->GetClientEntity(ent));
 	}
 
 public:

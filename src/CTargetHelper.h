@@ -57,7 +57,7 @@ namespace __CTargetHelper
 
 	inline float getDistanceToVector(Vector v)
 	{
-		CBaseEntity *pLocal = gInts.EntList->GetClientEntity(me);
+		CBaseEntity *pLocal = gInts->EntList->GetClientEntity(me);
 
 		if(!pLocal)
 			return 8192.0f;
@@ -93,138 +93,6 @@ enum class targetHelpers
 	fov,
 };
 
-// allows the user to get the best target of that system without needing to know the impl
-class IBaseTargetSystem
-{
-public:
-	virtual CTarget getBestTarget() = 0;
-
-	virtual void removeTarget(int index) = 0;
-
-	virtual void addTarget(CTarget index) = 0;
-
-	virtual CTarget getLastBestTarget() = 0;
-
-	virtual float getBestStat() = 0;
-
-	virtual targetHelpers getType() = 0;
-};
-
-// target system based on distance
-// gets the closest target
-class CDistanceTargetSystem : public IBaseTargetSystem
-{
-	using target = std::pair<CTarget, float>;
-
-	std::unordered_map<CTarget, float> targets;
-
-	CTarget lastBestTarget;
-
-public:
-	CDistanceTargetSystem() { targets[{-1, {0,0,0}}] = FLT_MAX; }
-
-	CTarget getBestTarget() override
-	{
-		target bestTarg({-1, {0,0,0}}, FLT_MAX);
-
-		for(auto &targ : targets)
-		{
-			if(targ.second < bestTarg.second)
-			{
-				bestTarg		 = targ;
-				lastBestTarget = bestTarg.first;
-			}
-		}
-
-		return bestTarg.first;
-	}
-
-	// doesnt recalculate best target
-	float getBestStat() override { return targets[lastBestTarget]; }
-
-	void addTarget(CTarget targ) override
-	{
-		// add it to tge list
-		targets[targ] = __CTargetHelper::getDistanceToVector(targ.target);
-	}
-
-	CTarget getLastBestTarget() override
-	{
-		return lastBestTarget;
-	}
-
-	void removeTarget(int index) override { targets.erase({index, {0,0,0}}); }
-
-	targetHelpers getType() override { return targetHelpers::distance; };
-};
-
-class CFovTargetSystem : public IBaseTargetSystem
-{
-
-	using target = std::pair<CTarget, float>;
-
-	std::unordered_map<CTarget, float> targets;
-
-	CTarget lastBestTarget;
-
-public:
-	CFovTargetSystem() { targets[{-1, {0,0,0}}] = 8192.0f; };
-
-	CTarget getBestTarget() override
-	{
-		target bestTarg({-1,{0,0,0}}, 8192.f);
-
-		for(auto &targ : targets)
-		{
-			if(targ.second < bestTarg.second)
-			{
-				bestTarg = targ;
-				lastBestTarget = bestTarg.first;
-			}
-		}
-
-		return bestTarg.first;
-	}
-
-	float getBestStat() override { return targets[lastBestTarget]; }
-
-	void addTarget(CTarget index) override
-	{
-		CEntity<> local{me};
-
-		float fov = __CTargetHelper::GetFov(local->GetAbsAngles(), local->GetAbsOrigin() + gLocalPlayerVars.viewOffset, index.target);
-		//Log::Console("Adding Target %d with fov %f", index, fov);
-		targets[index] = fov;
-	}
-
-	CTarget getLastBestTarget() override
-	{
-		return lastBestTarget;
-	}
-
-	void removeTarget(int index) override { targets.erase({index, {0,0,0}}); }
-
-	targetHelpers getType() override { return targetHelpers::fov; };
-};
-
-inline IBaseTargetSystem *switchTargetSystem(IBaseTargetSystem *oldPtr, targetHelpers newType)
-{
-	if(oldPtr)
-		delete oldPtr;
-
-	switch(newType)
-	{
-	case targetHelpers::distance:
-		return new CDistanceTargetSystem();
-	case targetHelpers::fov:
-		return new CFovTargetSystem();
-	default:
-		Log::Debug("INVALID TARGET SYSTEM ID: %d", newType);
-		return oldPtr;
-		break;
-	}
-}
-
 class CGlobalTargetHelper
 {
 	CTarget bestRageTarg;
@@ -236,13 +104,13 @@ public:
 	// return value is whether the entity is valid (e.g. for player cond, alive, team)
 	// int is the index
 	// this should not check whether the target is visible (e.g. position checks)
-	using isValidTargetFn = std::function<bool( int )>;
+	using isValidTargetFn = std::function<bool( CBaseEntity * )>;
 
 	// return value is whether the entity is visible
 	// int is the index
 	// place the target vector into the Vector &
 	// this should only do position checks
-	using isVisibleTargetFn = std::function<bool( int, Vector & )>;
+	using isVisibleTargetFn = std::function<bool(CBaseEntity *, Vector & )>;
 
 	// compares two targets too each other
 	// the first param is the current best target
@@ -250,6 +118,10 @@ public:
 	// return true to show that the new one is better
 	// or false to show that the old one is still best
 	using compareTargetFn = std::function<bool( const CTarget &, const CTarget & )>;
+
+	// return value is the location that should be compared
+	// first param is the entity 
+	using compareLocationFn = std::function<Vector(CBaseEntity *)>;
 
 	CGlobalTargetHelper()
 	{
@@ -268,9 +140,9 @@ public:
 		bool hasRageTarget = false;
 		bool hasTarget = false;
 
-		for( int i = 1; i < gInts.Engine->GetMaxClients(); i++ )
+		for( int i = 1; i <= gInts->Engine->GetMaxClients(); i++ )
 		{
-			CBaseEntity *pBaseEntity = gInts.EntList->GetClientEntity( i );
+			CBaseEntity *pBaseEntity = gInts->EntList->GetClientEntity( i );
 
 			if( pBaseEntity == NULL )
 			{
@@ -282,23 +154,24 @@ public:
 				continue;
 			}
 
-			if( !isValidTarget( i ) )
+			if( !isValidTarget( pBaseEntity ) )
 			{
 				continue;
 			}
 
-			Vector t;
+			Vector t = compareLocation(pBaseEntity);
 
-			if( !isVisibleTarget( i, t ) )
-			{
-				continue;
-			}
+			// do we care about whether a target is closer after prediction?
 
 			if( gPlayerManager.getModeForPlayer( i ) == CPlayerManager::playerMode::Rage )
 			{
 				CTarget newTarg = {i,t};
 				if(!oneTimeRage)
 				{
+					if(!isVisibleTarget(pBaseEntity, newTarg.target))
+					{
+						continue;
+					}
 					bestRageTarg = newTarg;
 					oneTimeRage = true;
 					hasRageTarget = hasTarget = true;
@@ -307,15 +180,24 @@ public:
 				{
 					if(compareTarget(bestRageTarg, newTarg))
 					{
+						if(!isVisibleTarget(pBaseEntity, newTarg.target))
+						{
+							continue;
+						}
 						bestRageTarg = newTarg;
 					}
 				}
 			}
-			else if( gPlayerManager.getModeForPlayer( i ) == CPlayerManager::playerMode::Normal )
+			// if we have a valid and visible rage target then we do not need to enumerate these
+			else if( gPlayerManager.getModeForPlayer( i ) == CPlayerManager::playerMode::Normal && !hasRageTarget )
 			{
 				CTarget newTarg = {i,t};
 				if(!oneTimeNormal)
 				{
+					if(!isVisibleTarget(pBaseEntity, newTarg.target))
+					{
+						continue;
+					}
 					bestTarg = newTarg;
 					oneTimeNormal = true;
 					hasTarget = true;
@@ -324,6 +206,10 @@ public:
 				{
 					if(compareTarget(bestTarg, newTarg))
 					{
+						if(!isVisibleTarget(pBaseEntity, newTarg.target))
+						{
+							continue;
+						}
 						bestTarg = newTarg;
 					}
 				}
@@ -377,7 +263,7 @@ public:
 		isVisibleTarget = fn;
 	}
 
-	void setCompareTarget( DWORD k, compareTargetFn fn )
+	void setCompareTargetFn( DWORD k, compareTargetFn fn )
 	{
 		if( k != key )
 			return;
@@ -386,6 +272,16 @@ public:
 			compareTarget = defaultCompareTargetFn;
 		}
 		compareTarget = fn;
+	}
+	void setCompareLocationFn(DWORD k, compareLocationFn fn)
+	{
+		if(k != key)
+			return;
+		if(fn == nullptr)
+		{
+			compareLocation = defaultCompareLocationFn;
+		}
+		compareLocation = fn;
 	}
 
 	void releaseOwner( DWORD k )
@@ -409,13 +305,16 @@ public:
 
 private:
 	isValidTargetFn isValidTarget;
-	isValidTargetFn defaultIsValidTargetFn = []( int ) -> bool { return false; };
+	isValidTargetFn defaultIsValidTargetFn = []( CBaseEntity * ) -> bool { return false; };
 
 	isVisibleTargetFn isVisibleTarget;
-	isVisibleTargetFn defaultIsVisibleTargetFn = []( int, Vector & ) -> bool { return false; };
+	isVisibleTargetFn defaultIsVisibleTargetFn = [](CBaseEntity *, Vector & ) -> bool { return false; };
 
 	compareTargetFn compareTarget;
 	compareTargetFn defaultCompareTargetFn = []( const CTarget &, const CTarget & ) -> bool { return false; };
+
+	compareLocationFn compareLocation;
+	compareLocationFn defaultCompareLocationFn = [](CBaseEntity *) -> Vector { return{0,0,0}; };
 
 	// this is here to prevent different modules from overriding the valid/visible/compare functions
 	// only 1 module should needs to get targets at a time

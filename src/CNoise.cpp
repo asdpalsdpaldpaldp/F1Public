@@ -18,7 +18,7 @@ void CNoise::processCommand(CUserCmd *pUserCmd)
 	{
 		// the thing here doesnt matter.
 		keyVal::SetName(kv, "use_action_slot_item_server", 0xDEADBEEF);
-		gInts.Engine->ServerCmdKeyValues(kv);
+		gInts->Engine->ServerCmdKeyValues(kv);
 		return;
 	}
 }

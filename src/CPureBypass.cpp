@@ -15,7 +15,7 @@ void CPureBypass::init()
 	XASSERT(dwPureLoc);
 
 	//demoPlayerHook = new VMTBaseManager();
-	//demoPlayerHook->Init(gInts.DemoPlayer);
+	//demoPlayerHook->Init(gInts->DemoPlayer);
 	//demoPlayerHook->HookMethod(&Hooked_IsPlayingBack, gOffsets.isPlayingBack);
 	//demoPlayerHook->Rehook();
 
@@ -27,12 +27,12 @@ bool CPureBypass::paint(/*CUserCmd **/)
 	// bytepatch to bypass sv_pure checks
 
 	// Works as expected.
-	//if(*(PDWORD)dwPureLoc)
-	//{
-	//	*(PDWORD)dwPureLoc = NULL;
-	//}
+	if(*(PDWORD)dwPureLoc)
+	{
+		*(PDWORD)dwPureLoc = NULL;
+	}
 
-	// gInts.DemoPlayer->m_bInterpolateView = true;
+	// gInts->DemoPlayer->m_bInterpolateView = true;
 
 	return true;
 }

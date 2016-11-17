@@ -11,7 +11,7 @@ struct F1_Point
 	int x;
 	int y;
 
-	F1_Point operator-( const F1_Point &other )
+	F1_Point operator-(const F1_Point &other)
 	{
 		return F1_Point{ x - other.x, y - other.y };
 	}
@@ -45,13 +45,13 @@ public:
 
 	virtual ~F1_IComponent() {};
 
-	virtual bool handleMouseInput( int x, int y, mouseButton m ) = 0;
+	virtual bool handleMouseInput(int x, int y, mouseButton m) = 0;
 
 	virtual void render() = 0;
 
 	virtual bool hasParent() = 0;
 	virtual F1_IComponent *getParent() = 0;
-	virtual void setParent( F1_IComponent *p ) = 0;
+	virtual void setParent(F1_IComponent *p) = 0;
 
 	//virtual F1_IComponent **getChildren() = 0;
 	virtual int getChildrenCount() = 0;
@@ -87,26 +87,26 @@ protected:
 
 public:
 
-	F1_CComponent( int x, int y ) : posX( x ), posY( y )
+	F1_CComponent(int x, int y) : posX(x), posY(y)
 	{
 		parent = nullptr;
 		posW = posH = 0;
 		thisHandle = ++lastHandle;
 	}
 
-	F1_CComponent( int x, int y, int w, int h ) : posX( x ), posY( y ), posW( w ), posH( h )
+	F1_CComponent(int x, int y, int w, int h) : posX(x), posY(y), posW(w), posH(h)
 	{
 		parent = nullptr;
 		thisHandle = ++lastHandle;
 	}
 
-	F1_CComponent( F1_IComponent *parent, int x, int y ) : posX( x ), posY( y ), parent( parent )
+	F1_CComponent(F1_IComponent *parent, int x, int y) : posX(x), posY(y), parent(parent)
 	{
 		posW = posH = 0;
 		thisHandle = ++lastHandle;
 	}
 
-	F1_CComponent( F1_IComponent *parent, int x, int y, int w, int h ) : posX( x ), posY( y ), posW( w ), posH( h ), parent( parent )
+	F1_CComponent(F1_IComponent *parent, int x, int y, int w, int h) : posX(x), posY(y), posW(w), posH(h), parent(parent)
 	{
 		thisHandle = ++lastHandle;
 	}
@@ -114,7 +114,7 @@ public:
 	virtual ~F1_CComponent() override
 	{
 		// we want to destruct and delete all of our children
-		for( auto &child : children )
+		for(auto &child : children)
 		{
 			// return memory to heap
 			// destructor is auto called by operator delete
@@ -127,7 +127,7 @@ public:
 		return{ posX, posY };
 	}
 
-	virtual void setPos( F1_Point p )
+	virtual void setPos(F1_Point p)
 	{
 		posX = p.x;
 		posY = p.y;
@@ -138,7 +138,7 @@ public:
 		return{ posW, posH };
 	}
 
-	virtual void setWidthHeight( F1_Point p )
+	virtual void setWidthHeight(F1_Point p)
 	{
 		posW = p.x;
 		posH = p.y;
@@ -146,14 +146,14 @@ public:
 
 	virtual void render() override;
 
-	virtual bool handleMouseInput( int x, int y, mouseButton m ) override
+	virtual bool handleMouseInput(int x, int y, mouseButton m) override
 	{
 		bool ret = false;
 
 		// make sure that we handle mouse input for our children
-		for( auto &child : children )
+		for(auto &child : children)
 		{
-			ret = child->handleMouseInput( x, y, m ) ? true : ret;
+			ret = child->handleMouseInput(x, y, m) ? true : ret;
 		}
 
 		return ret;
@@ -167,7 +167,7 @@ public:
 	{
 		return parent;
 	}
-	virtual void setParent( F1_IComponent *p ) override
+	virtual void setParent(F1_IComponent *p) override
 	{
 		parent = p;
 	}
@@ -184,29 +184,29 @@ public:
 	{
 		// handle childrens think
 
-		for( auto &child : children )
+		for(auto &child : children)
 		{
 			child->think();
 		}
 	}
 
-	virtual F1_Handle addChild( F1_IComponent *c )
+	virtual F1_Handle addChild(F1_IComponent *c)
 	{
 		// never add yourself as a child
 		// never steal a child
-		if( c->getHandle() == thisHandle || c->hasParent() == true )
+		if(c->getHandle() == thisHandle || c->hasParent() == true)
 			throw;
 
-		children.push_back( c );
+		children.push_back(c);
 
-		c->setParent( this );
+		c->setParent(this);
 
 		return c->getHandle();
 	}
 
 	// returns the child that it just removed
 	// does not destruct the child that it removes
-	virtual F1_IComponent *removeChild( F1_Handle childHandle )
+	virtual F1_IComponent *removeChild(F1_Handle childHandle)
 	{
 		// find the handle in our children
 
@@ -214,9 +214,9 @@ public:
 
 		auto it = children.begin();
 
-		for( ; it != children.end(); it++ )
+		for(; it != children.end(); it++)
 		{
-			if( ( *it )->getHandle() == childHandle )
+			if(( *it )->getHandle() == childHandle)
 			{
 				break;
 			}
@@ -225,14 +225,14 @@ public:
 		F1_IComponent *c = *it;
 
 		// auto calls destructor
-		children.erase( it );
+		children.erase(it);
 
 		return c;
 	}
 
 	virtual void destroyChildren()
 	{
-		for( auto &child : children )
+		for(auto &child : children)
 		{
 			// auto calls destructor
 			delete child;
@@ -265,31 +265,31 @@ protected:
 
 public:
 
-	F1_CWindow( int x, int y ) : F1_CComponent( x, y ), isMoving( false )
+	F1_CWindow(int x, int y) : F1_CComponent(x, y), isMoving(false)
 	{
 		bounds = { x,y, 0, 0 };
 		oldBounds = { 0,0 };
 	}
 
-	F1_CWindow( int x, int y, int w, int h ) : F1_CComponent( x, y, w, h ), isMoving( false )
+	F1_CWindow(int x, int y, int w, int h) : F1_CComponent(x, y, w, h), isMoving(false)
 	{
 		bounds = { x, y, w, h };
 		oldBounds = { 0,0,0,0 };
 	}
 
-	F1_CWindow( int x, int y, int w, int h, int bX, int bY, int bW, int bH ) : F1_CComponent( x, y, w, h ), isMoving( false )
+	F1_CWindow(int x, int y, int w, int h, int bX, int bY, int bW, int bH) : F1_CComponent(x, y, w, h), isMoving(false)
 	{
 		bounds = { bX,bY, bW, bH };
 		oldBounds = { 0,0,0,0 };
 	}
 
-	bool handleMouseInput( int x, int y, mouseButton m ) override;
+	bool handleMouseInput(int x, int y, mouseButton m) override;
 
 	virtual void think() override;
 
 	virtual void render() override;
 
-	virtual void setBounds( F1_Rect b )
+	virtual void setBounds(F1_Rect b)
 	{
 		bounds = b;
 	}

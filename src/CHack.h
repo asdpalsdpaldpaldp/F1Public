@@ -22,29 +22,35 @@ class CHack : public IHack<CHack>
 
 	F1_Menu menu;
 
-	struct pSilentData_t
-	{
-		int tickCounter = 0;
+	F1_ConVar<Switch> hackSwitch{"Hack", false};
+	F1_ConVar<bool> fakeLag{" - Fake lag", false};
+	F1_ConVar<int> fakeLagAmount{" - - Amount", 15, 1, 100, 1};
+	F1_ConVar<int> fakeCrouch{" - Fake crouch", 0, 0, 2, 1};
+	F1_ConVar<int> tickCountConstant{" - Tick count", 0, -200000, 200000, 100};
+	F1_ConVar<int> speedHackSpeed{" - Speedhack speed", 7, 0, 100, 1};
+	F1_ConVar<bool> speedHackConstant{" - Force speedhack", false};
 
-		float fMove, sMove;
-		Vector view;
-	};
+	bool canIntro = false;
 
-	F1_ConVar<Switch> *hackSwitch;
-	F1_ConVar<bool> *fakeLag;
-	F1_ConVar<int> *fakeLagAmount;
-	F1_ConVar<int> *fakeCrouch;
-	F1_ConVar<int> *tickCountConstant;
-	F1_ConVar<int> *speedHackSpeed;
-	F1_ConVar<bool> *speedHackConstant;
+	srcFactory ClientFactory;
+	srcFactory EngineFactory;
+	srcFactory VGUIFactory;
+	srcFactory VGUI2Factory;
+	srcFactory MaterialSystemFactory;
+	srcFactory PhysicsFactory;
+	srcFactory CvarFactory;
+
+	CInterfaces interfaces;
 
 public:
 	CHack();
 	~CHack();
-	// for drawing on screen
-	void paintTraverse(PVOID pPanels, int edx, unsigned int vguiPanel, bool forceRepaint, bool allowForce); // take all variables from parent...
+
 	// set up draw manager and netvars
 	void intro();
+
+	// setup the hack
+	static void Init(HINSTANCE hInstance);
 
 	static bool __fastcall Hooked_CreateMove( PVOID ClientMode, int edx, float input_sample_frametime, CUserCmd* pCommand );
 
@@ -63,8 +69,6 @@ public:
 	//inline IHack **getHackArray() { return pHackArray; };
 
 	void menuUpdate( F1_IConVar **menuArray, int &currIndex );
-
-	pSilentData_t silentData;
 };
 
 extern CHack gHack;

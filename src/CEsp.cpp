@@ -55,7 +55,7 @@ void CESP::processEntity( CBaseEntity *pBaseEntity )
 			return;
 
 		player_info_t info;
-		if(!gInts.Engine->GetPlayerInfo(pBaseEntity->GetIndex(), &info))
+		if(!gInts->Engine->GetPlayerInfo(pBaseEntity->GetIndex(), &info))
 			return;
 
 		if( hitboxes->getValue() == true )
@@ -98,7 +98,7 @@ void CESP::processEntity( CBaseEntity *pBaseEntity )
 
 		if(renderHealth->getValue() == true)
 		{
-			gDrawManager.DrawString( "esp", vecScreen.x, vecScreen.y, teamColor, XorString( "%i" ), pBaseEntity->GetHealth() /*gInts.GameResource->getHealth(index)*/ ); //Draw on the player.
+			gDrawManager.DrawString( "esp", vecScreen.x, vecScreen.y, teamColor, XorString( "%i" ), pBaseEntity->GetHealth() /*gInts->GameResource->getHealth(index)*/ ); //Draw on the player.
 			vecScreen.y += gDrawManager.GetESPHeight();
 		}
 
@@ -121,7 +121,7 @@ void CESP::processEntity( CBaseEntity *pBaseEntity )
 
 			// we cant use the '1 tick' trick here as in paintTraverse, we are run multiple times per tick!
 			// we should use debugoverlay here for speed reasons, but also so that it doesnt show through walls
-			//gInts.DebugOverlay->AddLineOverlay(eyepos, forward, RED(teamColor), GREEN(teamColor), BLUE(teamColor), false, 1);
+			//gInts->DebugOverlay->AddLineOverlay(eyepos, forward, RED(teamColor), GREEN(teamColor), BLUE(teamColor), false, 1);
 
 			Vector screenForward, screenEyepos;
 			if(gDrawManager.WorldToScreen(eyepos, screenEyepos) && gDrawManager.WorldToScreen(forward, screenForward))
@@ -171,7 +171,7 @@ void CESP::FrameHitbox( CBaseEntity *pBaseEntity, int iHitbox )
 	if(!pModel)
 		return;
 
-	DWORD *pStudioHdr = gInts.ModelInfo->GetStudiomodel(pModel);
+	DWORD *pStudioHdr = gInts->ModelInfo->GetStudiomodel(pModel);
 	if(!pStudioHdr)
 		return;
 
@@ -190,7 +190,7 @@ void CESP::FrameHitbox( CBaseEntity *pBaseEntity, int iHitbox )
 
 	matrix3x4 vMatrix[128];
 
-	if(!pBaseEntity->SetupBones(vMatrix, 128, 0x100, gInts.Globals->curtime))
+	if(!pBaseEntity->SetupBones(vMatrix, 128, 0x100, gInts->Globals->curtime))
 		return;
 
 	Vector vMin = pBox->bbmin;
@@ -322,7 +322,7 @@ void CESP::drawBoneEsp( CBaseEntity *pBaseEntity, DWORD color )
 		if( !pModel )
 			return;
 
-		DWORD *pStudioHdr = gInts.ModelInfo->GetStudiomodel( pModel );
+		DWORD *pStudioHdr = gInts->ModelInfo->GetStudiomodel( pModel );
 		if( !pStudioHdr )
 			return;
 
