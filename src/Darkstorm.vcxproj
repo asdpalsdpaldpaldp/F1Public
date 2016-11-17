@@ -148,6 +148,7 @@
     <ClCompile Include="VMTHooks.cpp" />
     <ClCompile Include="backtrace.cpp" />
 	<ClCompile Include="projectile.cpp" />
+	<ClCompile Include="factory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="backtrace.h" />
