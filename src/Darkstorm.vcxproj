@@ -120,7 +120,6 @@
     <ClCompile Include="CDrawManager.cpp" />
     <ClCompile Include="CEsp.cpp" />
     <ClCompile Include="CHack.cpp" />
-    <ClCompile Include="CHackState.cpp" />
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="CGlobalVars.cpp" />
     <ClCompile Include="CPlayerManager.cpp" />
@@ -174,7 +173,6 @@
     <ClInclude Include="CEsp.h" />
     <ClInclude Include="CGlobalVars.h" />
     <ClInclude Include="CHack.h" />
-    <ClInclude Include="CHackState.h" />
     <ClInclude Include="ClassId.h" />
     <ClInclude Include="commonEnums.h" />
     <ClInclude Include="DynamicNetvars.h" />
