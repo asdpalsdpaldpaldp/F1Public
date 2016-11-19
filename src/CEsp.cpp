@@ -98,7 +98,7 @@ void CESP::processEntity( CBaseEntity *pBaseEntity )
 
 		if(renderHealth->getValue() == true)
 		{
-			gDrawManager.DrawString( "esp", vecScreen.x, vecScreen.y, teamColor, XorString( "%i" ), pBaseEntity->GetHealth() /*gInts->GameResource->getHealth(index)*/ ); //Draw on the player.
+			gDrawManager.DrawString( "esp", vecScreen.x, vecScreen.y, redGreenGradiant(pBaseEntity->GetHealth(), getMaxHealth(pBaseEntity->GetClass())), XorString( "%i" ), pBaseEntity->GetHealth() /*gInts->GameResource->getHealth(index)*/ ); //Draw on the player.
 			vecScreen.y += gDrawManager.GetESPHeight();
 		}
 
