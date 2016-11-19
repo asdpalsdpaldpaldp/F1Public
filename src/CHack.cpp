@@ -85,7 +85,7 @@ CHack::CHack() try : menu(100, 100, 200),
 		interfaces(
 			// == CLIENT ==
 
-			[this]() -> auto { auto c = ClientFactory.get<CHLClient *>("VClient017");
+			[this]() -> CHLClient * { auto c = ClientFactory.get<CHLClient *>("VClient017");
 				gHookManager.hookMethod(c, gOffsets.createMoveOffset, &CHack::Hooked_CHLCreateMove); 
 				gHookManager.hookMethod(c, gOffsets.keyEvent, &CHack::Hooked_KeyEvent);
 				return c; }(),
@@ -96,7 +96,7 @@ CHack::CHack() try : menu(100, 100, 200),
 
 			ClientFactory.get<IGameMovement *>("GameMovement001"),
 
-			[this]() -> auto { auto cm = static_cast<ClientModeShared *>(clientModeThread()); 
+			[this]() -> ClientModeShared * { auto cm = static_cast<ClientModeShared *>(clientModeThread()); 
 				gHookManager.hookMethod(cm, gOffsets.createMoveOffset, &CHack::Hooked_CreateMove);
 				return cm; }(),
 
