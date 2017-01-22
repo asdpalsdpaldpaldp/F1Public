@@ -108,7 +108,7 @@ In order to make the hack active, add it to the active hacks definition in CHack
 	gPureBypass, gRadar, gTrigger, gMisc, gHack, gModule
 ```
 
-## Credits wow
+## Credits
 
 #### gir489
 creater of the darkstorm base and the noisemaker spam code
