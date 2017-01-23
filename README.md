@@ -5,6 +5,10 @@
 
 This is the public version of my hack that i will be updating when i see fit. All the code here is the same as my own hack at one point.
 
+
+Join the discord: https://discord.io/f12017
+
+
 ## Features
 ### Aimbot
 * silent / non silent
